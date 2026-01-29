@@ -114,4 +114,5 @@ versions: [
 - **Project IDs** must be lowercase with dashes (no spaces or special characters)
 - **Prototypes** can use any HTML/CSS/JS - PinUp injects click tracking automatically
 - **Comments** are stored per-version, so each version has its own feedback thread
+- **Browse vs Comment Mode**: Panel closed = normal browsing; Panel open = comment mode
 - Run `npm run dev` in PinUp to start the local server if not already running

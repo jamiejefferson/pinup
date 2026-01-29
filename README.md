@@ -7,6 +7,7 @@ PinUp is a design feedback platform that allows clients to leave contextual comm
 - **Contextual Feedback**: Click on any element to leave a comment pinned to that exact location
 - **CSS Selector Capture**: Automatically generates CSS selectors for targeted elements
 - **Version Control**: Switch between prototype versions, with comments scoped per version
+- **Browse/Comment Modes**: Panel closed = normal browsing; Panel open = comment mode
 - **Role-Based Access**: Separate client and admin authentication
 - **Cursor/Claude Export**: Export comments as markdown ready for AI coding assistants
 
@@ -84,6 +85,19 @@ public/
 ```
 
 Prototypes can use any HTML/CSS/JS. Click capture is injected automatically.
+
+## Using PinUp
+
+### Browse Mode (Comments Panel Closed)
+- Prototype behaves normally - links work, buttons are clickable
+- Use this to explore and test the prototype
+
+### Comment Mode (Comments Panel Open)
+- Click on any element to add a comment
+- Existing comments are shown as numbered dots
+- "Click anywhere to add a comment" hint appears at the bottom
+
+Toggle between modes by clicking the comments button in the header.
 
 ## Authentication
 
