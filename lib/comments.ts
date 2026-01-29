@@ -1,11 +1,46 @@
 import { Comment, CreateCommentRequest, getDeviceType, UserType } from '@/types';
-import { getRedis, KEYS } from './kv';
+import { getSupabase } from './supabase';
 
 /**
- * Generate a UUID for comment IDs
+ * Database row type (snake_case)
  */
-function generateId(): string {
-  return crypto.randomUUID();
+interface CommentRow {
+  id: string;
+  project_id: string;
+  version_id: string;
+  created_at: string;
+  author_name: string;
+  author_type: UserType;
+  text: string;
+  element_selector: string;
+  element_text: string;
+  click_x: number;
+  click_y: number;
+  viewport_width: number;
+  viewport_height: number;
+  device_type: 'mobile' | 'tablet' | 'desktop';
+}
+
+/**
+ * Convert database row to Comment type
+ */
+function rowToComment(row: CommentRow): Comment {
+  return {
+    id: row.id,
+    projectId: row.project_id,
+    versionId: row.version_id,
+    createdAt: row.created_at,
+    authorName: row.author_name,
+    authorType: row.author_type,
+    text: row.text,
+    elementSelector: row.element_selector,
+    elementText: row.element_text,
+    clickX: row.click_x,
+    clickY: row.click_y,
+    viewportWidth: row.viewport_width,
+    viewportHeight: row.viewport_height,
+    deviceType: row.device_type,
+  };
 }
 
 /**
@@ -16,37 +51,33 @@ export async function createComment(
   authorName: string,
   authorType: UserType
 ): Promise<Comment> {
-  const redis = getRedis();
-  const id = generateId();
-  const now = new Date().toISOString();
-  
-  const comment: Comment = {
-    id,
-    projectId: request.projectId,
-    versionId: request.versionId,
-    createdAt: now,
-    authorName,
-    authorType,
-    text: request.text,
-    elementSelector: request.elementSelector,
-    elementText: request.elementText.slice(0, 100), // Truncate to 100 chars
-    clickX: request.clickX,
-    clickY: request.clickY,
-    viewportWidth: request.viewportWidth,
-    viewportHeight: request.viewportHeight,
-    deviceType: getDeviceType(request.viewportWidth),
-  };
+  const supabase = getSupabase();
+  const deviceType = getDeviceType(request.viewportWidth);
 
-  // Store the comment
-  await redis.set(KEYS.comment(id), comment);
-  
-  // Add to the project/version set
-  await redis.sadd(
-    KEYS.projectVersionComments(request.projectId, request.versionId),
-    id
-  );
+  const { data, error } = await supabase
+    .from('comments')
+    .insert({
+      project_id: request.projectId,
+      version_id: request.versionId,
+      author_name: authorName,
+      author_type: authorType,
+      text: request.text,
+      element_selector: request.elementSelector,
+      element_text: request.elementText.slice(0, 100),
+      click_x: request.clickX,
+      click_y: request.clickY,
+      viewport_width: request.viewportWidth,
+      viewport_height: request.viewportHeight,
+      device_type: deviceType,
+    })
+    .select()
+    .single();
 
-  return comment;
+  if (error) {
+    throw new Error(`Failed to create comment: ${error.message}`);
+  }
+
+  return rowToComment(data as CommentRow);
 }
 
 /**
@@ -56,59 +87,58 @@ export async function getComments(
   projectId: string,
   versionId: string
 ): Promise<Comment[]> {
-  const redis = getRedis();
-  
-  // Get all comment IDs for this version
-  const ids = await redis.smembers(KEYS.projectVersionComments(projectId, versionId));
-  
-  if (!ids || ids.length === 0) {
-    return [];
+  const supabase = getSupabase();
+
+  const { data, error } = await supabase
+    .from('comments')
+    .select('*')
+    .eq('project_id', projectId)
+    .eq('version_id', versionId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    throw new Error(`Failed to fetch comments: ${error.message}`);
   }
 
-  // Fetch all comments
-  const comments = await Promise.all(
-    ids.map(async (id) => {
-      const comment = await redis.get(KEYS.comment(id as string));
-      return comment as Comment | null;
-    })
-  );
-
-  // Filter out nulls and sort by creation date (newest first)
-  return comments
-    .filter((c): c is Comment => c !== null)
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  return (data as CommentRow[]).map(rowToComment);
 }
 
 /**
  * Get a single comment by ID
  */
 export async function getComment(id: string): Promise<Comment | null> {
-  const redis = getRedis();
-  const comment = await redis.get(KEYS.comment(id));
-  return comment as Comment | null;
+  const supabase = getSupabase();
+
+  const { data, error } = await supabase
+    .from('comments')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error) {
+    if (error.code === 'PGRST116') {
+      return null; // Not found
+    }
+    throw new Error(`Failed to fetch comment: ${error.message}`);
+  }
+
+  return rowToComment(data as CommentRow);
 }
 
 /**
  * Delete a comment
  */
 export async function deleteComment(id: string): Promise<boolean> {
-  const redis = getRedis();
-  
-  // First get the comment to know which set to remove from
-  const comment = await getComment(id);
-  
-  if (!comment) {
-    return false;
-  }
+  const supabase = getSupabase();
 
-  // Delete the comment
-  await redis.del(KEYS.comment(id));
-  
-  // Remove from the project/version set
-  await redis.srem(
-    KEYS.projectVersionComments(comment.projectId, comment.versionId),
-    id
-  );
+  const { error } = await supabase
+    .from('comments')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    throw new Error(`Failed to delete comment: ${error.message}`);
+  }
 
   return true;
 }
@@ -120,7 +150,17 @@ export async function getCommentCount(
   projectId: string,
   versionId: string
 ): Promise<number> {
-  const redis = getRedis();
-  const ids = await redis.smembers(KEYS.projectVersionComments(projectId, versionId));
-  return ids?.length || 0;
+  const supabase = getSupabase();
+
+  const { count, error } = await supabase
+    .from('comments')
+    .select('*', { count: 'exact', head: true })
+    .eq('project_id', projectId)
+    .eq('version_id', versionId);
+
+  if (error) {
+    throw new Error(`Failed to count comments: ${error.message}`);
+  }
+
+  return count || 0;
 }
