@@ -215,7 +215,7 @@ export function ReviewInterface({
         <PrototypeFrame
           url={currentVersion.url}
           onElementClick={handleElementClick}
-          showDots={isPanelOpen}
+          commentModeEnabled={isPanelOpen}
           comments={comments}
           onDotClick={handleDotClick}
         />

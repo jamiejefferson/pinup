@@ -121,10 +121,14 @@ export function generateSelector(element: Element): string {
 /**
  * Get the script to inject into the iframe for click handling
  * This script captures clicks and sends data back to the parent via postMessage
+ * Comment mode can be toggled on/off via messages from the parent
  */
 export function getIframeScript(): string {
   return `
 (function() {
+  // Comment mode state - when false, allow normal browsing
+  let commentModeEnabled = false;
+
   // Utility class patterns to filter out
   const UTILITY_PATTERNS = [
     /^flex$/, /^grid$/, /^p-/, /^m-/, /^w-/, /^h-/, /^text-/, /^bg-/,
@@ -188,7 +192,19 @@ export function getIframeScript(): string {
     return text.trim().slice(0, 100);
   }
 
+  // Listen for messages from parent to toggle comment mode
+  window.addEventListener('message', function(e) {
+    if (e.data && e.data.type === 'PINUP_SET_COMMENT_MODE') {
+      commentModeEnabled = e.data.enabled;
+    }
+  });
+
   document.addEventListener('click', function(e) {
+    // If comment mode is disabled, allow normal browsing
+    if (!commentModeEnabled) {
+      return;
+    }
+
     e.preventDefault();
     e.stopPropagation();
     

@@ -8,7 +8,7 @@ import { CommentDot } from './comment-dot';
 interface PrototypeFrameProps {
   url: string;
   onElementClick: (data: ElementClickData) => void;
-  showDots: boolean;
+  commentModeEnabled: boolean;
   comments: Comment[];
   onDotClick?: (commentId: string) => void;
 }
@@ -19,7 +19,7 @@ interface PrototypeFrameProps {
 export function PrototypeFrame({
   url,
   onElementClick,
-  showDots,
+  commentModeEnabled,
   comments,
   onDotClick,
 }: PrototypeFrameProps) {
@@ -104,6 +104,17 @@ export function PrototypeFrame({
     return () => window.removeEventListener('resize', updateViewport);
   }, []);
 
+  // Send comment mode state to iframe when it changes
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe?.contentWindow) return;
+
+    iframe.contentWindow.postMessage({
+      type: 'PINUP_SET_COMMENT_MODE',
+      enabled: commentModeEnabled,
+    }, '*');
+  }, [commentModeEnabled]);
+
   return (
     <div className="relative flex-1 bg-[#1a1a1a]">
       {/* Loading State */}
@@ -157,7 +168,7 @@ export function PrototypeFrame({
       />
 
       {/* Comment Dots Overlay */}
-      {showDots && comments.length > 0 && (
+      {commentModeEnabled && comments.length > 0 && (
         <div className="absolute inset-0 pointer-events-none">
           {comments.map((comment, index) => (
             <CommentDot
@@ -173,8 +184,8 @@ export function PrototypeFrame({
         </div>
       )}
 
-      {/* Click Hint */}
-      {!showDots && !isLoading && !error && (
+      {/* Click Hint - only shown in comment mode */}
+      {commentModeEnabled && !isLoading && !error && (
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-[#2d2d2d] text-gray-400 px-4 py-2 rounded-full text-xs border border-gray-700">
           Click anywhere to add a comment
         </div>
