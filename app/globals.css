@@ -1,26 +1,185 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Equator Brand Fonts */
+@font-face {
+  font-family: 'Korolev';
+  src: url('/fonts/KorolevCompressed-Heavy.otf') format('opentype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
 }
 
+@font-face {
+  font-family: 'Poppins';
+  src: url('/fonts/Poppins-Light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  src: url('/fonts/Poppins-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  src: url('/fonts/Poppins-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  src: url('/fonts/Poppins-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Equator Design System Tokens */
+:root {
+  /* Brand Colors */
+  --eqtr-purple: #b02ded;
+  --eqtr-green: #00a887;
+  --eqtr-blue: #5c7aff;
+  --eqtr-grey: #9ca2b5;
+  --eqtr-yellow: #eace57;
+  --eqtr-red: #fa0724;
+  --eqtr-pink: #ff00a1;
+  --eqtr-black: #000000;
+  --eqtr-white: #ffffff;
+
+  /* Tint variations */
+  --eqtr-purple-90: rgba(176, 45, 237, 0.9);
+  --eqtr-purple-20: rgba(176, 45, 237, 0.2);
+  --eqtr-purple-10: rgba(176, 45, 237, 0.1);
+  --eqtr-pink-90: rgba(255, 0, 161, 0.9);
+  --eqtr-pink-20: rgba(255, 0, 161, 0.2);
+  --eqtr-pink-10: rgba(255, 0, 161, 0.1);
+  --eqtr-grey-90: rgba(156, 162, 181, 0.9);
+  --eqtr-grey-20: rgba(156, 162, 181, 0.2);
+  --eqtr-grey-10: rgba(156, 162, 181, 0.1);
+
+  /* Role Tokens - Surfaces */
+  --surface-bg: var(--eqtr-white);
+  --surface-bg-inverse: var(--eqtr-black);
+  --surface-card: var(--eqtr-white);
+  --surface-card-alt: var(--eqtr-grey-10);
+
+  /* Role Tokens - Text */
+  --text-primary: var(--eqtr-black);
+  --text-secondary: var(--eqtr-grey);
+  --text-inverse: var(--eqtr-white);
+  --text-link: var(--eqtr-pink);
+
+  /* Role Tokens - Borders */
+  --border-subtle: var(--eqtr-grey-20);
+  --border-default: var(--eqtr-grey-90);
+
+  /* Role Tokens - Actions */
+  --action-primary: var(--eqtr-pink);
+  --action-primary-text: var(--eqtr-white);
+  --action-secondary: var(--eqtr-black);
+  --action-secondary-text: var(--eqtr-white);
+
+  /* Role Tokens - Status */
+  --status-success: var(--eqtr-green);
+  --status-warning: var(--eqtr-yellow);
+  --status-error: var(--eqtr-red);
+  --status-info: var(--eqtr-blue);
+
+  /* Spacing (8px base) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+
+  /* Motion */
+  --motion-duration-1: 100ms;
+  --motion-duration-2: 180ms;
+  --motion-duration-3: 260ms;
+  --motion-duration-4: 420ms;
+  --motion-easing: ease-out;
+
+  /* Background */
+  --background: var(--surface-bg);
+  --foreground: var(--text-primary);
+}
+
+/* Tailwind v4 Theme Extension */
 @theme inline {
+  /* Colors */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  
+  /* Equator Brand Colors */
+  --color-eqtr-purple: var(--eqtr-purple);
+  --color-eqtr-green: var(--eqtr-green);
+  --color-eqtr-blue: var(--eqtr-blue);
+  --color-eqtr-grey: var(--eqtr-grey);
+  --color-eqtr-yellow: var(--eqtr-yellow);
+  --color-eqtr-red: var(--eqtr-red);
+  --color-eqtr-pink: var(--eqtr-pink);
+  --color-eqtr-black: var(--eqtr-black);
+  --color-eqtr-white: var(--eqtr-white);
+
+  /* Tints */
+  --color-eqtr-purple-90: var(--eqtr-purple-90);
+  --color-eqtr-purple-20: var(--eqtr-purple-20);
+  --color-eqtr-purple-10: var(--eqtr-purple-10);
+  --color-eqtr-pink-90: var(--eqtr-pink-90);
+  --color-eqtr-pink-20: var(--eqtr-pink-20);
+  --color-eqtr-pink-10: var(--eqtr-pink-10);
+  --color-eqtr-grey-90: var(--eqtr-grey-90);
+  --color-eqtr-grey-20: var(--eqtr-grey-20);
+  --color-eqtr-grey-10: var(--eqtr-grey-10);
+
+  /* Fonts */
+  --font-display: 'Korolev', sans-serif;
+  --font-sans: 'Poppins', sans-serif;
+
+  /* Border Radius */
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Base Styles */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
+
+/* Display Typography - Korolev rules */
+.font-display {
+  font-family: 'Korolev', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+}
+
+/* Utility classes for Equator spacing */
+.space-eqtr-1 { padding: var(--space-1); }
+.space-eqtr-2 { padding: var(--space-2); }
+.space-eqtr-3 { padding: var(--space-3); }
+.space-eqtr-4 { padding: var(--space-4); }
+.space-eqtr-5 { padding: var(--space-5); }
+.space-eqtr-6 { padding: var(--space-6); }
+.space-eqtr-7 { padding: var(--space-7); }
+.space-eqtr-8 { padding: var(--space-8); }
+.space-eqtr-9 { padding: var(--space-9); }

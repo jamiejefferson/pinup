@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hotel Booking - V1</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+  <!-- Hero Section -->
+  <header class="hero-section bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+    <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+      <div class="logo text-2xl font-bold">StayLux</div>
+      <div class="nav-links space-x-6">
+        <a href="#" class="hover:underline">Destinations</a>
+        <a href="#" class="hover:underline">Deals</a>
+        <a href="#" class="hover:underline">About</a>
+        <a href="#" class="cta-secondary bg-white text-purple-600 px-4 py-2 rounded-lg font-medium">Sign In</a>
+      </div>
+    </nav>
+    <div class="container mx-auto px-6 py-24 text-center">
+      <h1 class="text-5xl font-bold mb-6">Book your perfect getaway</h1>
+      <p class="subtitle text-xl mb-8 opacity-90">Discover luxury hotels at unbeatable prices</p>
+      <div class="search-box bg-white rounded-xl p-6 max-w-4xl mx-auto shadow-2xl">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <input type="text" placeholder="Where to?" class="search-input border rounded-lg px-4 py-3 text-gray-700">
+          <input type="date" class="date-input border rounded-lg px-4 py-3 text-gray-700">
+          <input type="date" class="date-input border rounded-lg px-4 py-3 text-gray-700">
+          <button class="cta-primary bg-purple-600 text-white rounded-lg px-6 py-3 font-semibold hover:bg-purple-700 transition">Search</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Featured Section -->
+  <section class="featured-section container mx-auto px-6 py-16">
+    <h2 class="section-title text-3xl font-bold text-gray-800 mb-8">Featured Destinations</h2>
+    <div class="cards-grid grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div class="card bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition">
+        <div class="card-image bg-gradient-to-br from-pink-400 to-purple-500 h-48"></div>
+        <div class="card-content p-6">
+          <h3 class="card-title text-xl font-semibold text-gray-800">Paris, France</h3>
+          <p class="card-description text-gray-600 mt-2">The city of lights awaits</p>
+          <p class="card-price text-purple-600 font-bold mt-4">From $299/night</p>
+        </div>
+      </div>
+      <div class="card bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition">
+        <div class="card-image bg-gradient-to-br from-blue-400 to-cyan-500 h-48"></div>
+        <div class="card-content p-6">
+          <h3 class="card-title text-xl font-semibold text-gray-800">Tokyo, Japan</h3>
+          <p class="card-description text-gray-600 mt-2">Where tradition meets future</p>
+          <p class="card-price text-purple-600 font-bold mt-4">From $199/night</p>
+        </div>
+      </div>
+      <div class="card bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition">
+        <div class="card-image bg-gradient-to-br from-orange-400 to-red-500 h-48"></div>
+        <div class="card-content p-6">
+          <h3 class="card-title text-xl font-semibold text-gray-800">Bali, Indonesia</h3>
+          <p class="card-description text-gray-600 mt-2">Paradise on Earth</p>
+          <p class="card-price text-purple-600 font-bold mt-4">From $149/night</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section bg-gray-900 text-white py-16">
+    <div class="container mx-auto px-6 text-center">
+      <h2 class="text-3xl font-bold mb-4">Ready to explore?</h2>
+      <p class="text-gray-300 mb-8">Join millions of travelers who trust StayLux</p>
+      <button class="cta-primary bg-purple-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-purple-700 transition">Get Started</button>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer bg-gray-800 text-gray-400 py-12">
+    <div class="container mx-auto px-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <h4 class="footer-title text-white font-semibold mb-4">StayLux</h4>
+          <p class="text-sm">Your trusted partner for luxury travel experiences.</p>
+        </div>
+        <div>
+          <h4 class="footer-title text-white font-semibold mb-4">Company</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="#" class="hover:text-white">About</a></li>
+            <li><a href="#" class="hover:text-white">Careers</a></li>
+            <li><a href="#" class="hover:text-white">Press</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="footer-title text-white font-semibold mb-4">Support</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="#" class="hover:text-white">Help Center</a></li>
+            <li><a href="#" class="hover:text-white">Contact</a></li>
+            <li><a href="#" class="hover:text-white">Safety</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="footer-title text-white font-semibold mb-4">Legal</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="#" class="hover:text-white">Privacy</a></li>
+            <li><a href="#" class="hover:text-white">Terms</a></li>
+            <li><a href="#" class="hover:text-white">Cookies</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

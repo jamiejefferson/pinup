@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PinUp - Wireframe v3 (Final)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { font-family: 'Comic Sans MS', cursive, sans-serif; }
+    .wireframe-box { 
+      border: 2px dashed #94a3b8; 
+      background: repeating-linear-gradient(
+        -45deg,
+        #f8fafc,
+        #f8fafc 10px,
+        #f1f5f9 10px,
+        #f1f5f9 20px
+      );
+    }
+    .sketch-border { border: 2px solid #475569; border-radius: 4px; }
+    .hand-drawn {
+      border: 2px solid #475569;
+      border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+    }
+    .comment-dot {
+      width: 24px;
+      height: 24px;
+      background: #f97316;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .admin-badge {
+      background: linear-gradient(135deg, #8b5cf6, #6366f1);
+    }
+    .client-badge {
+      background: linear-gradient(135deg, #10b981, #059669);
+    }
+    .viewport-badge {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    }
+    .decision-locked {
+      background: #dcfce7;
+      border-left: 4px solid #22c55e;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 p-8">
+  
+  <div class="max-w-7xl mx-auto">
+    
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <h1 class="text-3xl font-bold text-gray-800 mb-2">📌 PinUp Wireframes v3</h1>
+      <p class="text-gray-600">Final spec — ready for build</p>
+    </div>
+
+    <!-- Decisions Locked -->
+    <div class="mb-12 sketch-border bg-white p-6">
+      <h2 class="text-xl font-bold text-gray-700 mb-4">✅ Decisions Locked</h2>
+      
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="decision-locked p-3 rounded">
+          <strong>Panel default:</strong> Collapsed — minimal interface
+        </div>
+        <div class="decision-locked p-3 rounded">
+          <strong>Comment dots:</strong> Only visible when panel is open, current version only
+        </div>
+        <div class="decision-locked p-3 rounded">
+          <strong>Delete behaviour:</strong> Confirmation dialog
+        </div>
+        <div class="decision-locked p-3 rounded">
+          <strong>Mobile:</strong> Full responsive support
+        </div>
+        <div class="decision-locked p-3 rounded">
+          <strong>Viewport indicator:</strong> Show current device size (no resize)
+        </div>
+        <div class="decision-locked p-3 rounded">
+          <strong>Auth:</strong> Client (per-project) + Admin (global) passwords
+        </div>
+      </div>
+    </div>
+
+    <!-- Auth Model (unchanged) -->
+    <div class="mb-12 sketch-border bg-white p-6">
+      <h2 class="text-xl font-bold text-gray-700 mb-4">🔐 Authentication Model</h2>
+      
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="p-4 rounded-lg bg-green-50 border-2 border-green-200">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="client-badge text-white px-3 py-1 rounded-full text-sm font-bold">Client</span>
+          </div>
+          <ul class="text-sm text-gray-600 space-y-2">
+            <li>✅ View prototype</li>
+            <li>✅ Add comments</li>
+            <li>✅ Delete their own comments</li>
+            <li>✅ Switch versions</li>
+            <li>❌ <span class="text-gray-400">Export comments</span></li>
+            <li>❌ <span class="text-gray-400">Delete others' comments</span></li>
+          </ul>
+          <div class="mt-4 p-3 bg-white rounded border border-green-200">
+            <p class="text-xs text-gray-500 mb-1">Unique password per project:</p>
+            <code class="text-sm font-mono">hotel-review-2025</code>
+          </div>
+        </div>
+        
+        <div class="p-4 rounded-lg bg-purple-50 border-2 border-purple-200">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="admin-badge text-white px-3 py-1 rounded-full text-sm font-bold">Admin</span>
+          </div>
+          <ul class="text-sm text-gray-600 space-y-2">
+            <li>✅ View prototype</li>
+            <li>✅ Add comments</li>
+            <li>✅ Delete ANY comment</li>
+            <li>✅ Switch versions</li>
+            <li>✅ <strong>Export comments for Cursor</strong></li>
+          </ul>
+          <div class="mt-4 p-3 bg-white rounded border border-purple-200">
+            <p class="text-xs text-gray-500 mb-1">Same password for all projects:</p>
+            <code class="text-sm font-mono">eqtr-pinup-admin</code>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 1: Login -->
+    <div class="mb-12">
+      <h2 class="text-xl font-bold text-gray-700 mb-4 flex items-center gap-2">
+        <span class="bg-gray-700 text-white px-3 py-1 rounded text-sm">Screen 1</span>
+        Login Page
+      </h2>
+      <div class="sketch-border bg-white p-8 max-w-md mx-auto">
+        <div class="text-center mb-8">
+          <div class="text-4xl mb-2">📌</div>
+          <div class="text-2xl font-bold text-gray-700">PinUp</div>
+          <div class="text-gray-500 text-sm">Prototype Review</div>
+        </div>
+        
+        <div class="space-y-4">
+          <div>
+            <label class="text-sm text-gray-600 block mb-1">Password</label>
+            <div class="hand-drawn bg-gray-50 p-3 text-gray-400">••••••••</div>
+          </div>
+          
+          <div>
+            <label class="text-sm text-gray-600 block mb-1">Your Name</label>
+            <div class="hand-drawn bg-gray-50 p-3 text-gray-400">Sarah from Marketing</div>
+          </div>
+          
+          <button class="w-full hand-drawn bg-orange-500 text-white p-3 font-bold">
+            Enter Review →
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 2a: Default State (Panel Collapsed, No Dots) -->
+    <div class="mb-12">
+      <h2 class="text-xl font-bold text-gray-700 mb-4 flex items-center gap-2">
+        <span class="bg-gray-700 text-white px-3 py-1 rounded text-sm">Screen 2a</span>
+        Default State — Panel Collapsed
+        <span class="text-sm text-gray-500 font-normal">(no comment dots visible)</span>
+      </h2>
+      
+      <div class="sketch-border bg-white overflow-hidden">
+        
+        <!-- Top Bar - Minimal -->
+        <div class="bg-gray-800 text-white p-3 flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <span class="text-xl">📌</span>
+            <span class="font-bold">Hotel Booking Prototype</span>
+          </div>
+          
+          <div class="flex items-center gap-4">
+            <!-- Viewport Indicator -->
+            <div class="flex items-center gap-2 text-sm">
+              <span class="viewport-badge text-white px-2 py-0.5 rounded text-xs">Desktop 1440px</span>
+            </div>
+            
+            <!-- Version Switcher -->
+            <div class="flex items-center gap-2">
+              <select class="bg-gray-700 text-white px-3 py-1 rounded text-sm">
+                <option>V3 - Current</option>
+                <option>V2</option>
+                <option>V1</option>
+              </select>
+            </div>
+            
+            <!-- Toggle Panel Button -->
+            <button class="bg-orange-500 px-4 py-1 rounded text-sm font-bold flex items-center gap-2">
+              💬 Comments (3)
+            </button>
+          </div>
+        </div>
+        
+        <!-- Main Content Area - Clean, no dots -->
+        <div class="p-4" style="min-height: 400px;">
+          
+          <div class="wireframe-box h-full p-6 relative" style="min-height: 350px;">
+            
+            <!-- Prototype content WITHOUT dots -->
+            <div class="sketch-border bg-white p-4 mb-4">
+              <div class="h-8 bg-gray-300 rounded w-48 mb-2"></div>
+              <div class="h-4 bg-gray-200 rounded w-full mb-1"></div>
+              <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+              <!-- NO DOT -->
+            </div>
+            
+            <div class="flex gap-4 mb-4">
+              <div class="sketch-border bg-white p-4 flex-1">
+                <div class="h-16 bg-gray-200 rounded mb-2"></div>
+                <div class="h-4 bg-gray-300 rounded w-2/3"></div>
+              </div>
+              <div class="sketch-border bg-white p-4 flex-1">
+                <div class="h-16 bg-gray-200 rounded mb-2"></div>
+                <div class="h-4 bg-gray-300 rounded w-2/3"></div>
+                <!-- NO DOT -->
+              </div>
+              <div class="sketch-border bg-white p-4 flex-1">
+                <div class="h-16 bg-gray-200 rounded mb-2"></div>
+                <div class="h-4 bg-gray-300 rounded w-2/3"></div>
+              </div>
+            </div>
+            
+            <div class="sketch-border bg-white p-4">
+              <div class="h-10 bg-orange-300 rounded w-32"></div>
+              <!-- NO DOT -->
+            </div>
+            
+            <!-- Instruction -->
+            <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-full text-sm">
+              💡 Click anywhere to add a comment
+            </div>
+            
+          </div>
+        </div>
+      </div>
+      
+      <p class="text-center text-sm text-gray-500 mt-3">↑ Clean viewing experience — client can review without visual clutter</p>
+    </div>
+
+    <!-- Screen 2b: Panel Open (Dots Visible) - Client -->
+    <div class="mb-12">
+      <h2 class="text-xl font-bold text-gray-700 mb-4 flex items-center gap-2">
+        <span class="bg-gray-700 text-white px-3 py-1 rounded text-sm">Screen 2b</span>
+        Panel Open — 
+        <span class="client-badge text-white px-3 py-1 rounded-full text-sm font-bold">Client View</span>
+        <span class="text-sm text-gray-500 font-normal">(dots now visible)</span>
+      </h2>
+      
+      <div class="sketch-border bg-white overflow-hidden">
+        
+        <!-- Top Bar -->
+        <div class="bg-gray-800 text-white p-3 flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <span class="text-xl">📌</span>
+            <span class="font-bold">Hotel Booking Prototype</span>
+          </div>
+          
+          <div class="flex items-center gap-4">
+            <!-- Viewport Indicator -->
+            <div class="flex items-center gap-2 text-sm">
+              <span class="viewport-badge text-white px-2 py-0.5 rounded text-xs">Desktop 1440px</span>
+            </div>
+            
+            <!-- Version Switcher -->
+            <select class="bg-gray-700 text-white px-3 py-1 rounded text-sm">
+              <option>V3 - Current</option>
+              <option>V2</option>
+              <option>V1</option>
+            </select>
+            
+            <!-- Close Panel Button -->
+            <button class="bg-gray-600 px-4 py-1 rounded text-sm font-bold flex items-center gap-2">
+              ✕ Close
+            </button>
+          </div>
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="flex">
+          
+          <!-- Prototype Area - WITH DOTS NOW -->
+          <div class="flex-1 p-4 relative" style="min-height: 400px;">
+            
+            <div class="wireframe-box h-full p-6 relative">
+              
+              <div class="sketch-border bg-white p-4 mb-4 relative">
+                <div class="h-8 bg-gray-300 rounded w-48 mb-2"></div>
+                <div class="h-4 bg-gray-200 rounded w-full mb-1"></div>
+                <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                <!-- DOT VISIBLE -->
+                <div class="comment-dot absolute -top-2 -right-2">1</div>
+              </div>
+              
+              <div class="flex gap-4 mb-4">
+                <div class="sketch-border bg-white p-4 flex-1">
+                  <div class="h-16 bg-gray-200 rounded mb-2"></div>
+                  <div class="h-4 bg-gray-300 rounded w-2/3"></div>
+                </div>
+                <div class="sketch-border bg-white p-4 flex-1 relative">
+                  <div class="h-16 bg-gray-200 rounded mb-2"></div>
+                  <div class="h-4 bg-gray-300 rounded w-2/3"></div>
+                  <!-- DOT VISIBLE -->
+                  <div class="comment-dot absolute -top-2 -right-2">2</div>
+                </div>
+                <div class="sketch-border bg-white p-4 flex-1">
+                  <div class="h-16 bg-gray-200 rounded mb-2"></div>
+                  <div class="h-4 bg-gray-300 rounded w-2/3"></div>
+                </div>
+              </div>
+              
+              <div class="sketch-border bg-white p-4 relative">
+                <div class="h-10 bg-orange-300 rounded w-32"></div>
+                <!-- DOT VISIBLE -->
+                <div class="comment-dot absolute -top-2 left-24">3</div>
+              </div>
+              
+              <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-full text-sm">
+                💡 Click anywhere to add a comment
+              </div>
+              
+            </div>
+          </div>
+          
+          <!-- Comment Panel - Client View -->
+          <div class="w-80 border-l-2 border-gray-200 bg-gray-50 p-4">
+            
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-bold text-gray-700">Comments (3)</h3>
+              <span class="text-xs text-gray-500">V3 only</span>
+            </div>
+            
+            <!-- Own comment - can delete -->
+            <div class="sketch-border bg-white p-3 mb-3 relative hover:shadow-md transition-shadow">
+              <div class="flex items-start justify-between mb-2">
+                <div class="flex items-center gap-2">
+                  <div class="comment-dot text-xs" style="width:20px;height:20px;">1</div>
+                  <span class="font-bold text-sm">Sarah</span>
+                  <span class="text-xs text-green-600 bg-green-100 px-1 rounded">you</span>
+                </div>
+                <button class="text-gray-400 hover:text-red-500 text-sm" title="Delete">🗑</button>
+              </div>
+              <p class="text-sm text-gray-600 mb-2">"Headline feels too generic"</p>
+              <div class="text-xs text-gray-400">
+                <span class="bg-gray-100 px-2 py-0.5 rounded font-mono">.hero h1</span>
+              </div>
+            </div>
+            
+            <!-- Someone else's comment - no delete -->
+            <div class="sketch-border bg-white p-3 mb-3 relative">
+              <div class="flex items-start justify-between mb-2">
+                <div class="flex items-center gap-2">
+                  <div class="comment-dot text-xs" style="width:20px;height:20px;">2</div>
+                  <span class="font-bold text-sm">James</span>
+                </div>
+                <!-- No delete button -->
+              </div>
+              <p class="text-sm text-gray-600 mb-2">"Love this card design!"</p>
+              <div class="text-xs text-gray-400">
+                <span class="bg-gray-100 px-2 py-0.5 rounded font-mono">.card:nth-child(2)</span>
+              </div>
+            </div>
+            
+            <!-- Own comment - can delete -->
+            <div class="sketch-border bg-white p-3 mb-3 relative hover:shadow-md transition-shadow">
+              <div class="flex items-start justify-between mb-2">
+                <div class="flex items-center gap-2">
+                  <div class="comment-dot text-xs" style="width:20px;height:20px;">3</div>
+                  <span class="font-bold text-sm">Sarah</span>
+                  <span class="text-xs text-green-600 bg-green-100 px-1 rounded">you</span>
+                </div>
+                <button class="text-gray-400 hover:text-red-500 text-sm" title="Delete">🗑</button>
+              </div>
+              <p class="text-sm text-gray-600 mb-2">"Button too small on mobile"</p>
+              <div class="text-xs text-gray-400">
+                <span class="bg-gray-100 px-2 py-0.5 rounded font-mono">button.cta</span>
+              </div>
+            </div>
+            
+            <!-- NO EXPORT FOR CLIENT -->
+            
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 2c: Panel Open - Admin View -->
+    <div class="mb-12">
+      <h2 class="text-xl font-bold text-gray-700 mb-4 flex items-center gap-2">
+        <span class="bg-gray-700 text-white px-3 py-1 rounded text-sm">Screen 2c</span>
+        Panel Open — 
+        <span class="admin-badge text-white px-3 py-1 rounded-full text-sm font-bold">Admin View</span>
+      </h2>
+      
+      <div class="sketch-border bg-white overflow-hidden">
+        
+        <!-- Top Bar - Admin -->
+        <div class="bg-gray-800 text-white p-3 flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <span class="text-xl">📌</span>
+            <span class="font-bold">Hotel Booking Prototype</span>
+            <span class="admin-badge text-white px-2 py-0.5 rounded-full text-xs">Admin</span>
+          </div>
+          
+          <div class="flex items-center gap-4">
+            <!-- Viewport Indicator -->
+            <span class="viewport-badge text-white px-2 py-0.5 rounded text-xs">Desktop 1440px</span>
+            
+            <!-- Version Switcher -->
+            <select class="bg-gray-700 text-white px-3 py-1 rounded text-sm">
+              <option>V3 - Current</option>
+              <option>V2</option>
+              <option>V1</option>
+            </select>
+            
+            <!-- Export Button - ADMIN ONLY -->
+            <button class="bg-orange-500 px-3 py-1 rounded text-sm font-bold">
+              📋 Export
+            </button>
+            
+            <button class="bg-gray-600 px-4 py-1 rounded text-sm font-bold">
+              ✕ Close
+            </button>
+          </div>
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="flex">
+          
+          <!-- Prototype Area -->
+          <div class="flex-1 p-4 relative" style="min-height: 350px;">
+            
+            <div class="wireframe-box h-full p-6 relative">
+              
+              <div class="sketch-border bg-white p-4 mb-4 relative">
+                <div class="h-8 bg-gray-300 rounded w-48 mb-2"></div>
+                <div class="h-4 bg-gray-200 rounded w-full mb-1"></div>
+                <div class="comment-dot absolute -top-2 -right-2">1</div>
+              </div>
+              
+              <div class="flex gap-4 mb-4">
+                <div class="sketch-border bg-white p-4 flex-1">
+                  <div class="h-12 bg-gray-200 rounded"></div>
+                </div>
+                <div class="sketch-border bg-white p-4 flex-1 relative">
+                  <div class="h-12 bg-gray-200 rounded"></div>
+                  <div class="comment-dot absolute -top-2 -right-2">2</div>
+                </div>
+              </div>
+              
+              <div class="sketch-border bg-white p-4 relative">
+                <div class="h-10 bg-orange-300 rounded w-32"></div>
+                <div class="comment-dot absolute -top-2 left-24">3</div>
+              </div>
+              
+            </div>
+          </div>
+          
+          <!-- Comment Panel - Admin View -->
+          <div class="w-80 border-l-2 border-gray-200 bg-gray-50 p-4">
+            
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-bold text-gray-700">Comments (3)</h3>
+              <span class="text-xs text-purple-600 font-medium">Admin</span>
+            </div>
+            
+            <!-- Admin can delete ALL -->
+            <div class="sketch-border bg-white p-3 mb-3 relative hover:shadow-md transition-shadow">
+              <div class="flex items-start justify-between mb-2">
+                <div class="flex items-center gap-2">
+                  <div class="comment-dot text-xs" style="width:20px;height:20px;">1</div>
+                  <span class="font-bold text-sm">Sarah</span>
+                </div>
+                <button class="text-gray-400 hover:text-red-500 text-sm">🗑</button>
+              </div>
+              <p class="text-sm text-gray-600 mb-2">"Headline feels too generic"</p>
+              <div class="text-xs text-gray-400">
+                <span class="bg-gray-100 px-2 py-0.5 rounded font-mono">.hero h1</span>
+              </div>
+            </div>
+            
+            <div class="sketch-border bg-white p-3 mb-3 relative hover:shadow-md transition-shadow">
+              <div class="flex items-start justify-between mb-2">
+                <div class="flex items-center gap-2">
+                  <div class="comment-dot text-xs" style="width:20px;height:20px;">2</div>
+                  <span class="font-bold text-sm">James</span>
+                </div>
+                <button class="text-gray-400 hover:text-red-500 text-sm">🗑</button>
+              </div>
+              <p class="text-sm text-gray-600 mb-2">"Love this card design!"</p>
+              <div class="text-xs text-gray-400">
+                <span class="bg-gray-100 px-2 py-0.5 rounded font-mono">.card</span>
+              </div>
+            </div>
+            
+            <div class="sketch-border bg-white p-3 mb-3 relative hover:shadow-md transition-shadow">
+              <div class="flex items-start justify-between mb-2">
+                <div class="flex items-center gap-2">
+                  <div class="comment-dot text-xs" style="width:20px;height:20px;">3</div>
+                  <span class="font-bold text-sm">Sarah</span>
+                </div>
+                <button class="text-gray-400 hover:text-red-500 text-sm">🗑</button>
+              </div>
+              <p class="text-sm text-gray-600 mb-2">"Button too small"</p>
+              <div class="text-xs text-gray-400">
+                <span class="bg-gray-100 px-2 py-0.5 rounded font-mono">button.cta</span>
+              </div>
+            </div>
+            
+            <!-- Export Section - Admin Only -->
+            <div class="mt-4 pt-4 border-t-2 border-dashed border-purple-300">
+              <button class="w-full hand-drawn bg-gray-800 text-white p-3 text-sm font-bold flex items-center justify-center gap-2">
+                📋 Copy All for Cursor
+              </button>
+              <p class="text-xs text-gray-500 text-center mt-2">Markdown with selectors</p>
+            </div>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 3: Add Comment Modal -->
+    <div class="mb-12">
+      <h2 class="text-xl font-bold text-gray-700 mb-4 flex items-center gap-2">
+        <span class="bg-gray-700 text-white px-3 py-1 rounded text-sm">Screen 3</span>
+        Add Comment Modal
+      </h2>
+      
+      <div class="max-w-md mx-auto">
+        <div class="sketch-border bg-white p-6 relative shadow-xl">
+          
+          <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 text-3xl">⬆️</div>
+          <p class="text-center text-xs text-gray-500 mb-4">
+            Clicked on: <span class="bg-gray-100 px-2 py-1 rounded font-mono">.hero-section h1</span>
+          </p>
+          
+          <div class="mb-4">
+            <label class="text-sm text-gray-600 block mb-1">Your feedback</label>
+            <textarea class="hand-drawn bg-gray-50 p-3 w-full h-24 text-sm" placeholder="What's your thought on this element?"></textarea>
+          </div>
+          
+          <div class="flex gap-2">
+            <button class="flex-1 hand-drawn bg-gray-200 text-gray-700 p-2 text-sm">Cancel</button>
+            <button class="flex-1 hand-drawn bg-orange-500 text-white p-2 text-sm font-bold">Pin Comment 📌</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 4: Delete Confirmation Dialog -->
+    <div class="mb-12">
+      <h2 class="text-xl font-bold text-gray-700 mb-4 flex items-center gap-2">
+        <span class="bg-gray-700 text-white px-3 py-1 rounded text-sm">Screen 4</span>
+        Delete Confirmation Dialog
+      </h2>
+      
+      <div class="max-w-sm mx-auto">
+        <div class="sketch-border bg-white p-6 shadow-xl">
+          
+          <div class="text-center mb-4">
+            <div class="text-4xl mb-2">🗑</div>
+            <h3 class="font-bold text-gray-800">Delete Comment?</h3>
+          </div>
+          
+          <div class="bg-gray-50 p-3 rounded mb-4">
+            <p class="text-sm text-gray-600 italic">"Headline feels too generic - can we make it more specific?"</p>
+            <p class="text-xs text-gray-400 mt-2">— Sarah · .hero h1</p>
+          </div>
+          
+          <p class="text-sm text-gray-500 text-center mb-4">This action cannot be undone.</p>
+          
+          <div class="flex gap-2">
+            <button class="flex-1 hand-drawn bg-gray-200 text-gray-700 p-2 text-sm">Cancel</button>
+            <button class="flex-1 hand-drawn bg-red-500 text-white p-2 text-sm font-bold">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 5: Mobile View -->
+    <div class="mb-12">
+      <h2 class="text-xl font-bold text-gray-700 mb-4 flex items-center gap-2">
+        <span class="bg-gray-700 text-white px-3 py-1 rounded text-sm">Screen 5</span>
+        Mobile View
+      </h2>
+      
+      <div class="flex gap-8 justify-center flex-wrap">
+        
+        <!-- Mobile: Panel Collapsed -->
+        <div>
+          <p class="text-sm text-gray-500 text-center mb-2">Panel Collapsed</p>
+          <div class="sketch-border bg-white overflow-hidden" style="width: 320px;">
+            
+            <!-- Mobile Top Bar -->
+            <div class="bg-gray-800 text-white p-2 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span>📌</span>
+                <span class="font-bold text-sm truncate" style="max-width: 120px;">Hotel Booking</span>
+              </div>
+              
+              <div class="flex items-center gap-2">
+                <span class="viewport-badge text-white px-2 py-0.5 rounded text-xs">375px</span>
+                <button class="bg-orange-500 px-2 py-1 rounded text-xs font-bold">
+                  💬 3
+                </button>
+              </div>
+            </div>
+            
+            <!-- Version bar -->
+            <div class="bg-gray-700 text-white p-2 text-center">
+              <select class="bg-gray-600 text-white px-3 py-1 rounded text-sm w-full">
+                <option>V3 - Current</option>
+              </select>
+            </div>
+            
+            <!-- Prototype -->
+            <div class="p-3" style="min-height: 300px;">
+              <div class="wireframe-box h-full p-3">
+                <div class="sketch-border bg-white p-3 mb-3">
+                  <div class="h-6 bg-gray-300 rounded w-3/4 mb-2"></div>
+                  <div class="h-3 bg-gray-200 rounded w-full"></div>
+                </div>
+                <div class="sketch-border bg-white p-3 mb-3">
+                  <div class="h-16 bg-gray-200 rounded"></div>
+                </div>
+                <div class="sketch-border bg-white p-3">
+                  <div class="h-8 bg-orange-300 rounded w-full"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Mobile: Panel Open (Full Screen Overlay) -->
+        <div>
+          <p class="text-sm text-gray-500 text-center mb-2">Panel Open (Overlay)</p>
+          <div class="sketch-border bg-white overflow-hidden" style="width: 320px;">
+            
+            <!-- Mobile Top Bar -->
+            <div class="bg-gray-800 text-white p-2 flex items-center justify-between">
+              <span class="font-bold text-sm">Comments (3)</span>
+              <button class="bg-gray-600 px-3 py-1 rounded text-xs font-bold">
+                ✕ Close
+              </button>
+            </div>
+            
+            <!-- Comments list - full screen on mobile -->
+            <div class="p-3 bg-gray-50" style="min-height: 350px;">
+              
+              <div class="sketch-border bg-white p-3 mb-3">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="flex items-center gap-2">
+                    <div class="comment-dot text-xs" style="width:18px;height:18px;font-size:10px;">1</div>
+                    <span class="font-bold text-sm">Sarah</span>
+                    <span class="text-xs text-green-600 bg-green-100 px-1 rounded">you</span>
+                  </div>
+                  <button class="text-gray-400 text-sm">🗑</button>
+                </div>
+                <p class="text-sm text-gray-600">"Headline feels too generic"</p>
+              </div>
+              
+              <div class="sketch-border bg-white p-3 mb-3">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="flex items-center gap-2">
+                    <div class="comment-dot text-xs" style="width:18px;height:18px;font-size:10px;">2</div>
+                    <span class="font-bold text-sm">James</span>
+                  </div>
+                </div>
+                <p class="text-sm text-gray-600">"Love this card design!"</p>
+              </div>
+              
+              <div class="sketch-border bg-white p-3 mb-3">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="flex items-center gap-2">
+                    <div class="comment-dot text-xs" style="width:18px;height:18px;font-size:10px;">3</div>
+                    <span class="font-bold text-sm">Sarah</span>
+                    <span class="text-xs text-green-600 bg-green-100 px-1 rounded">you</span>
+                  </div>
+                  <button class="text-gray-400 text-sm">🗑</button>
+                </div>
+                <p class="text-sm text-gray-600">"Button too small on mobile"</p>
+              </div>
+              
+            </div>
+          </div>
+        </div>
+        
+      </div>
+      
+      <p class="text-center text-sm text-gray-500 mt-4">On mobile, comment panel is a full-screen overlay rather than a sidebar</p>
+    </div>
+
+    <!-- Screen 6: Export Preview (Admin Only) -->
+    <div class="mb-12">
+      <h2 class="text-xl font-bold text-gray-700 mb-4 flex items-center gap-2">
+        <span class="bg-gray-700 text-white px-3 py-1 rounded text-sm">Screen 6</span>
+        Export Preview
+        <span class="admin-badge text-white px-3 py-1 rounded-full text-sm font-bold">Admin Only</span>
+      </h2>
+      
+      <div class="sketch-border bg-gray-900 p-6 text-green-400 font-mono text-sm overflow-x-auto">
+        <pre class="whitespace-pre-wrap">
+## PinUp Feedback Export
+**Project:** Hotel Booking Prototype  
+**Version:** V3 - Current  
+**Exported:** 2025-01-28 14:32  
+**Comments:** 3 items
+
+---
+
+### 📌 Comment #1
+**Element:** `.hero-section h1`  
+**Element Text:** "Book your perfect getaway"  
+**Viewport:** Desktop (1440px)  
+**Author:** Sarah  
+
+**Feedback:**  
+"Headline feels too generic - can we make it more specific to luxury boutique hotels?"
+
+**Suggested action:**  
+Update the h1 text in .hero-section to better reflect luxury boutique positioning.
+
+---
+
+### 📌 Comment #2
+**Element:** `.card:nth-child(2)`  
+**Viewport:** Desktop (1440px)  
+**Author:** James  
+
+**Feedback:**  
+"Love this card design! Can we add a hover effect?"
+
+**Suggested action:**  
+Add hover state to .card elements with subtle transform/shadow.
+
+---
+
+### 📌 Comment #3
+**Element:** `button.cta-primary`  
+**Element Text:** "Search"  
+**Viewport:** Mobile (375px)  
+**Author:** Sarah  
+
+**Feedback:**  
+"Button too small on mobile - hard to tap"
+
+**Suggested action:**  
+Increase tap target for .cta-primary on mobile. Minimum 44x44px.
+
+---
+*Exported from PinUp*
+        </pre>
+      </div>
+    </div>
+
+    <!-- Interaction Summary -->
+    <div class="sketch-border bg-white p-6">
+      <h2 class="text-xl font-bold text-gray-700 mb-4">🎯 Interaction Summary</h2>
+      
+      <div class="grid md:grid-cols-2 gap-6 text-sm">
+        
+        <div>
+          <h3 class="font-bold text-gray-700 mb-2">Panel Toggle</h3>
+          <ul class="text-gray-600 space-y-1 list-disc list-inside">
+            <li>Default: Closed (clean viewing)</li>
+            <li>Click "Comments (n)" to open</li>
+            <li>When open: dots appear on elements</li>
+            <li>When closed: dots hidden</li>
+            <li>Mobile: panel is full-screen overlay</li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="font-bold text-gray-700 mb-2">Version Switching</h3>
+          <ul class="text-gray-600 space-y-1 list-disc list-inside">
+            <li>Dropdown in top bar</li>
+            <li>Loads new prototype URL</li>
+            <li>Comments filter to that version</li>
+            <li>Dots only show for current version</li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="font-bold text-gray-700 mb-2">Adding Comments</h3>
+          <ul class="text-gray-600 space-y-1 list-disc list-inside">
+            <li>Click anywhere on prototype</li>
+            <li>Modal shows element selector</li>
+            <li>Type feedback, click "Pin"</li>
+            <li>Dot appears (if panel open)</li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="font-bold text-gray-700 mb-2">Deleting Comments</h3>
+          <ul class="text-gray-600 space-y-1 list-disc list-inside">
+            <li>Click trash icon on comment</li>
+            <li>Confirmation dialog appears</li>
+            <li>Shows comment preview</li>
+            <li>Confirm to delete permanently</li>
+          </ul>
+        </div>
+        
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

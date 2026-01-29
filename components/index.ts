@@ -1,0 +1,12 @@
+// Component exports for convenient imports
+export { Logo } from './logo';
+export { TopBar } from './top-bar';
+export { ViewportIndicator } from './viewport-indicator';
+export { VersionSwitcher } from './version-switcher';
+export { PrototypeFrame } from './prototype-frame';
+export { CommentDot } from './comment-dot';
+export { CommentPanel } from './comment-panel';
+export { CommentCard } from './comment-card';
+export { AddCommentModal } from './add-comment-modal';
+export { DeleteConfirmDialog } from './delete-confirm-dialog';
+export { ReviewInterface } from './review-interface';
