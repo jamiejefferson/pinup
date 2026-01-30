@@ -73,15 +73,26 @@ Add a new entry to `/Users/jamie.jefferson/AppDev/PinUp/data/projects.json`:
 
 **Important:** Add a comma after the previous project entry before adding the new one.
 
-### Step 5: Confirm Success
+### Step 5: Deploy to Live
+
+Commit and push the changes to deploy:
+
+```bash
+cd /Users/jamie.jefferson/AppDev/PinUp
+git add data/projects.json public/prototypes/[project-id]/
+git commit -m "Add [project-name] prototype"
+git push
+```
+
+### Step 6: Confirm Success
 
 Tell the user:
 
 ```
-✓ Uploaded to PinUp!
+✓ Uploaded to PinUp and deployed!
 
 Project: [Project Name]
-URL: http://localhost:3000/[project-id]
+Live URL: https://pinup.equator.dev/[project-id]
 Client Password: [client-password]
 
 Share this URL and password with your client to collect feedback.
@@ -104,6 +115,15 @@ If the user wants to add a new version to an existing project:
   { "id": "v1", "label": "V1 - Initial", "url": "/prototypes/[project-id]/v1/index.html" },
   { "id": "v2", "label": "[New Version Label]", "url": "/prototypes/[project-id]/v2/index.html" }
 ]
+```
+
+6. Deploy the new version:
+
+```bash
+cd /Users/jamie.jefferson/AppDev/PinUp
+git add data/projects.json public/prototypes/[project-id]/
+git commit -m "Add [project-name] v[N]"
+git push
 ```
 
 ---
