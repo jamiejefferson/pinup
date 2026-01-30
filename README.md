@@ -30,13 +30,18 @@ Then edit `.env.local` with your credentials:
 | Variable | Description |
 |----------|-------------|
 | `PINUP_ADMIN_PASSWORD` | Global admin password for full access |
-| `KV_REST_API_URL` | Upstash Redis REST URL |
-| `KV_REST_API_TOKEN` | Upstash Redis REST token |
+| `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Your Supabase anon/public key |
 
-**Getting Upstash Redis credentials:**
-1. Go to [Upstash Console](https://console.upstash.com/)
-2. Create a new Redis database (or use existing)
-3. Copy the REST URL and REST Token from the database details
+**Getting Supabase credentials:**
+1. Go to [Supabase Dashboard](https://supabase.com/dashboard)
+2. Create a new project (or use existing)
+3. Go to **Settings > API**
+4. Copy the **Project URL** and **anon/public** key
+
+**Setting up the database:**
+1. In Supabase, go to **SQL Editor**
+2. Run the contents of `supabase-schema.sql` to create the comments table
 
 ### 4. Run Development Server
 
@@ -198,9 +203,11 @@ Update heading text in .hero-section h1 to be more specific/compelling.
 
 1. Push to GitHub
 2. Import project in Vercel
-3. Add Upstash Redis integration from Vercel Marketplace
-4. Set `PINUP_ADMIN_PASSWORD` environment variable
-5. Deploy
+3. Add environment variables:
+   - `PINUP_ADMIN_PASSWORD`
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+4. Deploy
 
 **Live URL:** https://pinup-chi.vercel.app
 
@@ -218,7 +225,7 @@ npm start
 - **Framework**: Next.js 16+ (App Router)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS v4 with Equator Design System tokens
-- **Database**: Upstash Redis
+- **Database**: Supabase (PostgreSQL)
 - **Fonts**: Poppins (UI), Korolev (Display)
 
 ---
@@ -241,7 +248,8 @@ pinup/
 ├── public/
 │   └── prototypes/         # Prototype HTML files
 ├── PINUP-UPLOAD.md         # Upload command for Claude Code
-└── PINUP-SPECIFICATION.md  # Full product spec
+├── PINUP-SPECIFICATION.md  # Full product spec
+└── supabase-schema.sql     # Database schema for Supabase
 ```
 
 ---
@@ -254,7 +262,8 @@ pinup/
 - Rebuild Vite projects with `base: './'` in config
 
 ### Comments not saving?
-- Verify Upstash Redis credentials in `.env.local`
+- Verify Supabase credentials in `.env.local`
+- Make sure you've run `supabase-schema.sql` in your Supabase SQL Editor
 - Check browser console for API errors
 
 ### Can't delete project?
