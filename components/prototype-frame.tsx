@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Comment, ElementClickData } from '@/types';
 import { getIframeScript } from '@/lib/selectors';
-import { CommentDot } from './comment-dot';
 
 interface PrototypeFrameProps {
   url: string;
@@ -11,10 +10,12 @@ interface PrototypeFrameProps {
   commentModeEnabled: boolean;
   comments: Comment[];
   onDotClick?: (commentId: string) => void;
+  highlightedCommentId?: string | null;
 }
 
 /**
  * Iframe wrapper for displaying prototypes with click capture
+ * Comment dots are rendered inside the iframe for smooth scrolling
  */
 export function PrototypeFrame({
   url,
@@ -22,11 +23,12 @@ export function PrototypeFrame({
   commentModeEnabled,
   comments,
   onDotClick,
+  highlightedCommentId,
 }: PrototypeFrameProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
+  const [iframeReady, setIframeReady] = useState(false);
 
   // Inject click handler script into iframe
   const injectScript = useCallback(() => {
@@ -75,34 +77,18 @@ export function PrototypeFrame({
           viewportWidth: event.data.viewportWidth,
           viewportHeight: event.data.viewportHeight,
         });
-        setViewportSize({
-          width: event.data.viewportWidth,
-          height: event.data.viewportHeight,
-        });
       } else if (event.data.type === 'PINUP_IFRAME_READY') {
         setIsLoading(false);
+        setIframeReady(true);
+      } else if (event.data.type === 'PINUP_DOT_CLICK') {
+        // Handle dot click from inside iframe
+        onDotClick?.(event.data.commentId);
       }
     };
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [onElementClick]);
-
-  // Track viewport size on resize
-  useEffect(() => {
-    const updateViewport = () => {
-      if (iframeRef.current) {
-        setViewportSize({
-          width: iframeRef.current.clientWidth,
-          height: iframeRef.current.clientHeight,
-        });
-      }
-    };
-
-    updateViewport();
-    window.addEventListener('resize', updateViewport);
-    return () => window.removeEventListener('resize', updateViewport);
-  }, []);
+  }, [onElementClick, onDotClick]);
 
   // Send comment mode state to iframe when it changes
   useEffect(() => {
@@ -114,6 +100,36 @@ export function PrototypeFrame({
       enabled: commentModeEnabled,
     }, '*');
   }, [commentModeEnabled]);
+
+  // Send comments to iframe for dot rendering
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe?.contentWindow || !iframeReady) return;
+
+    // Send comment data needed for dot positioning
+    const commentData = comments.map((c) => ({
+      id: c.id,
+      selector: c.elementSelector,
+      clickX: c.clickX,
+      clickY: c.clickY,
+    }));
+
+    iframe.contentWindow.postMessage({
+      type: 'PINUP_UPDATE_COMMENTS',
+      comments: commentData,
+    }, '*');
+  }, [comments, iframeReady]);
+
+  // Send highlight state to iframe
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe?.contentWindow || !iframeReady) return;
+
+    iframe.contentWindow.postMessage({
+      type: 'PINUP_SET_HIGHLIGHT',
+      commentId: highlightedCommentId,
+    }, '*');
+  }, [highlightedCommentId, iframeReady]);
 
   return (
     <div className="relative flex-1 bg-[#1a1a1a]">
@@ -166,23 +182,6 @@ export function PrototypeFrame({
         title="Prototype preview"
         sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
       />
-
-      {/* Comment Dots Overlay */}
-      {commentModeEnabled && comments.length > 0 && (
-        <div className="absolute inset-0 pointer-events-none">
-          {comments.map((comment, index) => (
-            <CommentDot
-              key={comment.id}
-              number={index + 1}
-              position={{ 
-                top: 50 + (index * 10) % 80, // Placeholder positioning
-                left: 50 + (index * 15) % 80 
-              }}
-              onClick={() => onDotClick?.(comment.id)}
-            />
-          ))}
-        </div>
-      )}
 
       {/* Click Hint - only shown in comment mode */}
       {commentModeEnabled && !isLoading && !error && (

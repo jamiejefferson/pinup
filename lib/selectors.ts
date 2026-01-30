@@ -122,12 +122,17 @@ export function generateSelector(element: Element): string {
  * Get the script to inject into the iframe for click handling
  * This script captures clicks and sends data back to the parent via postMessage
  * Comment mode can be toggled on/off via messages from the parent
+ * Comment dots are rendered directly in the iframe for smooth scrolling
  */
 export function getIframeScript(): string {
   return `
 (function() {
   // Comment mode state - when false, allow normal browsing
   let commentModeEnabled = false;
+  // Store comment data and their dot elements
+  let comments = [];
+  let dotElements = new Map();
+  let highlightedId = null;
 
   // Utility class patterns to filter out
   const UTILITY_PATTERNS = [
@@ -192,14 +197,168 @@ export function getIframeScript(): string {
     return text.trim().slice(0, 100);
   }
 
-  // Listen for messages from parent to toggle comment mode
+  // Inject styles for comment dots
+  function injectStyles() {
+    if (document.getElementById('pinup-dot-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'pinup-dot-styles';
+    style.textContent = \`
+      .pinup-comment-dot {
+        position: absolute;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #ec4899;
+        border: 2px solid white;
+        color: white;
+        font-size: 11px;
+        font-weight: bold;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transform: translate(-50%, -50%);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        transition: transform 0.15s, background 0.15s;
+        z-index: 999999;
+        pointer-events: auto;
+      }
+      .pinup-comment-dot:hover {
+        transform: translate(-50%, -50%) scale(1.1);
+      }
+      .pinup-comment-dot.highlighted {
+        background: #f472b6;
+        transform: translate(-50%, -50%) scale(1.25);
+      }
+    \`;
+    document.head.appendChild(style);
+  }
+
+  // Create a dot element for a comment
+  function createDot(comment, index) {
+    const dot = document.createElement('button');
+    dot.className = 'pinup-comment-dot';
+    dot.setAttribute('data-pinup-id', comment.id);
+    dot.textContent = String(index + 1);
+    dot.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      window.parent.postMessage({
+        type: 'PINUP_DOT_CLICK',
+        commentId: comment.id
+      }, '*');
+    });
+    return dot;
+  }
+
+  // Position a dot relative to its target element
+  function positionDot(dot, comment) {
+    try {
+      const element = document.querySelector(comment.selector);
+      if (!element) {
+        dot.style.display = 'none';
+        return;
+      }
+      
+      // Get element's position relative to the document
+      const rect = element.getBoundingClientRect();
+      const scrollX = window.scrollX || window.pageXOffset;
+      const scrollY = window.scrollY || window.pageYOffset;
+      
+      // Calculate the absolute position in the document
+      const absoluteLeft = rect.left + scrollX;
+      const absoluteTop = rect.top + scrollY;
+      
+      // Position at the click point within the element
+      const x = absoluteLeft + (rect.width * comment.clickX / 100);
+      const y = absoluteTop + (rect.height * comment.clickY / 100);
+      
+      dot.style.display = 'flex';
+      dot.style.left = x + 'px';
+      dot.style.top = y + 'px';
+    } catch (err) {
+      dot.style.display = 'none';
+    }
+  }
+
+  // Update all dot positions and visibility
+  function updateDots() {
+    // Remove old dots that are no longer in comments
+    const currentIds = new Set(comments.map(c => c.id));
+    dotElements.forEach((dot, id) => {
+      if (!currentIds.has(id)) {
+        dot.remove();
+        dotElements.delete(id);
+      }
+    });
+
+    // Create or update dots for each comment
+    comments.forEach((comment, index) => {
+      let dot = dotElements.get(comment.id);
+      if (!dot) {
+        dot = createDot(comment, index);
+        document.body.appendChild(dot);
+        dotElements.set(comment.id, dot);
+      }
+      // Update number in case order changed
+      dot.textContent = String(index + 1);
+      // Update highlight state
+      dot.classList.toggle('highlighted', comment.id === highlightedId);
+      // Position the dot
+      positionDot(dot, comment);
+    });
+  }
+
+  // Show or hide all dots based on comment mode
+  function setDotsVisible(visible) {
+    dotElements.forEach(dot => {
+      dot.style.display = visible ? 'flex' : 'none';
+    });
+  }
+
+  // Listen for messages from parent
   window.addEventListener('message', function(e) {
-    if (e.data && e.data.type === 'PINUP_SET_COMMENT_MODE') {
+    if (!e.data || typeof e.data !== 'object') return;
+    
+    if (e.data.type === 'PINUP_SET_COMMENT_MODE') {
       commentModeEnabled = e.data.enabled;
+      setDotsVisible(commentModeEnabled);
+      if (commentModeEnabled) {
+        updateDots();
+      }
+    }
+    
+    // Update comments list
+    if (e.data.type === 'PINUP_UPDATE_COMMENTS') {
+      comments = e.data.comments || [];
+      injectStyles();
+      updateDots();
+      setDotsVisible(commentModeEnabled);
+    }
+    
+    // Update highlighted comment
+    if (e.data.type === 'PINUP_SET_HIGHLIGHT') {
+      highlightedId = e.data.commentId;
+      dotElements.forEach((dot, id) => {
+        dot.classList.toggle('highlighted', id === highlightedId);
+      });
+    }
+  });
+
+  // Reposition dots on resize (elements may have moved)
+  window.addEventListener('resize', function() {
+    if (commentModeEnabled) {
+      updateDots();
     }
   });
 
   document.addEventListener('click', function(e) {
+    // Ignore clicks on our dots
+    if (e.target.classList && e.target.classList.contains('pinup-comment-dot')) {
+      return;
+    }
+    
     // If comment mode is disabled, allow normal browsing
     if (!commentModeEnabled) {
       return;

@@ -224,6 +224,7 @@ export function ReviewInterface({
           commentModeEnabled={isPanelOpen}
           comments={comments}
           onDotClick={handleDotClick}
+          highlightedCommentId={highlightedCommentId}
         />
 
         {/* Comment Panel */}

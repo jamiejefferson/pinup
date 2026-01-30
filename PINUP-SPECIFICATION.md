@@ -358,8 +358,10 @@ PROTOTYPE_BASE_URL=
 interface PrototypeFrameProps {
   url: string;
   onElementClick: (data: ElementClickData) => void;
-  showDots: boolean;
+  commentModeEnabled: boolean;
   comments: Comment[];
+  onDotClick?: (commentId: string) => void;
+  highlightedCommentId?: string | null;
 }
 
 interface ElementClickData {
@@ -376,7 +378,12 @@ interface ElementClickData {
 - Use iframe with `src={url}`
 - Inject script into iframe to capture clicks and generate selectors
 - Use `postMessage` to communicate between iframe and parent
-- Overlay dots are positioned absolutely over iframe based on element positions
+- **Comment dots are rendered inside the iframe DOM** for smooth scrolling:
+  - Dots are injected as absolutely positioned elements within the iframe's document body
+  - Each dot is positioned relative to its target element using stored `clickX`/`clickY` percentages
+  - Dots automatically scroll with the page content (no lag or position tracking needed)
+  - Parent communicates with iframe via messages: `PINUP_UPDATE_COMMENTS`, `PINUP_SET_HIGHLIGHT`, `PINUP_SET_COMMENT_MODE`
+  - Iframe reports dot clicks back to parent via `PINUP_DOT_CLICK` message
 
 ### CommentDot
 
