@@ -164,7 +164,7 @@ export function PrototypeFrame({
         onError={handleError}
         className="w-full h-full border-0"
         title="Prototype preview"
-        sandbox="allow-scripts allow-same-origin"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
       />
 
       {/* Comment Dots Overlay */}
