@@ -46,7 +46,7 @@ export function TopBar({
             aria-label="Logout"
             title="Logout"
           >
-            <Logo size={28} variant="light" />
+            <Logo size={42} variant="light" />
           </button>
         </div>
 
