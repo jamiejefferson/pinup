@@ -32,5 +32,17 @@
         "url": "/prototypes/dashboard/v1/index.html"
       }
     ]
+  },
+  "woof": {
+    "id": "woof",
+    "name": "Woof",
+    "clientPassword": "PinWoof",
+    "versions": [
+      {
+        "id": "v1",
+        "label": "V1 - Initial Concept",
+        "url": "/prototypes/woof/v1/index.html"
+      }
+    ]
   }
 }
