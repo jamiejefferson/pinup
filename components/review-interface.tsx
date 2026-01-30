@@ -47,6 +47,9 @@ export function ReviewInterface({
       const response = await fetch(
         `/api/comments?projectId=${project.id}&versionId=${currentVersion.id}`
       );
+      if (!response.ok) {
+        throw new Error(`Failed to fetch comments: ${response.status}`);
+      }
       const data = await response.json();
       if (data.comments) {
         setComments(data.comments);
@@ -144,6 +147,9 @@ export function ReviewInterface({
       const response = await fetch(
         `/api/export?projectId=${project.id}&versionId=${currentVersion.id}`
       );
+      if (!response.ok) {
+        throw new Error(`Failed to export: ${response.status}`);
+      }
       const text = await response.text();
       
       // Generate dated filename

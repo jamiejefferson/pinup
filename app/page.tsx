@@ -26,7 +26,7 @@ export default function HomePage() {
         <div className="bg-[var(--surface-card)] rounded-[var(--radius-lg)] shadow-lg border border-[var(--border-subtle)] overflow-hidden">
           <div className="p-4 border-b border-[var(--border-subtle)] bg-[var(--surface-card-alt)]">
             <h2 className="font-semibold text-[var(--text-primary)]">
-              Available Projects
+              Your Prototypes
             </h2>
           </div>
 

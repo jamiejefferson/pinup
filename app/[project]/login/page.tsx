@@ -26,6 +26,12 @@ export default function LoginPage() {
         body: JSON.stringify({ projectId, password, name }),
       });
 
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        setError(data.error || `Login failed: ${response.status}`);
+        return;
+      }
+
       const data = await response.json();
 
       if (data.success) {
