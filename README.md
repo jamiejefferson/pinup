@@ -2,6 +2,84 @@
 
 PinUp is a design feedback platform that allows clients to leave contextual comments pinned to specific elements on design prototypes. Comments capture CSS selectors and viewport information, making feedback actionable for developers.
 
+## Quick Start for Team Members
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/jamiejefferson/pinup.git
+cd pinup
+```
+
+### 2. Install Dependencies
+
+```bash
+npm install
+```
+
+### 3. Configure Environment
+
+Copy the example environment file:
+
+```bash
+cp .env.example .env.local
+```
+
+Then edit `.env.local` with your credentials:
+
+| Variable | Description |
+|----------|-------------|
+| `PINUP_ADMIN_PASSWORD` | Global admin password for full access |
+| `KV_REST_API_URL` | Upstash Redis REST URL |
+| `KV_REST_API_TOKEN` | Upstash Redis REST token |
+
+**Getting Upstash Redis credentials:**
+1. Go to [Upstash Console](https://console.upstash.com/)
+2. Create a new Redis database (or use existing)
+3. Copy the REST URL and REST Token from the database details
+
+### 4. Run Development Server
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) to see PinUp running.
+
+---
+
+## Uploading Prototypes with Claude Code
+
+The easiest way to add prototypes to PinUp is using Claude Code with the upload command file.
+
+### Setup (One Time)
+
+1. Copy `PINUP-UPLOAD.md` from this repository to your project folder
+2. That's it!
+
+### Usage
+
+When working in Claude Code on any prototype project, just say:
+
+- "Upload to PinUp"
+- "Add to PinUp"
+- "Publish to PinUp"
+- "Share on PinUp"
+
+Claude will:
+1. Ask for project details (name, password, version label)
+2. Prepare your prototype for subdirectory hosting
+3. Copy files to PinUp
+4. Update the project config
+5. Commit and push to deploy
+6. Give you the live URL to share with clients
+
+### Adding New Versions
+
+To add a new version to an existing project, just say "Upload to PinUp" again. Claude will detect the existing project and add a new version (v2, v3, etc.).
+
+---
+
 ## Features
 
 - **Contextual Feedback**: Click on any element to leave a comment pinned to that exact location
@@ -11,46 +89,27 @@ PinUp is a design feedback platform that allows clients to leave contextual comm
 - **Role-Based Access**: Separate client and admin authentication
 - **Cursor/Claude Export**: Export comments as markdown ready for AI coding assistants
 
-## Tech Stack
+---
 
-- **Framework**: Next.js 14+ (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS with Equator Design System tokens
-- **Database**: Upstash Redis (Vercel KV compatible)
-- **Fonts**: Poppins (UI), Korolev (Display)
+## Manual Project Setup
 
-## Getting Started
+If you prefer to add projects manually (without Claude Code):
 
-### 1. Install Dependencies
+### 1. Create Directory Structure
 
-```bash
-npm install
+```
+public/prototypes/my-project/v1/
 ```
 
-### 2. Configure Environment
+### 2. Add Prototype Files
 
-Copy the example environment file and add your credentials:
+Copy your HTML prototype to `public/prototypes/my-project/v1/index.html`
 
-```bash
-cp .env.example .env.local
-```
+**Important:** Ensure all asset paths are relative (use `./assets/` not `/assets/`)
 
-Required variables:
-- `PINUP_ADMIN_PASSWORD`: Global admin password
-- `KV_REST_API_URL`: Upstash Redis REST URL
-- `KV_REST_API_TOKEN`: Upstash Redis REST token
+### 3. Configure Project
 
-### 3. Run Development Server
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) to see the project list.
-
-## Adding Projects
-
-Projects are configured in `data/projects.json`. To add a new project:
+Add to `data/projects.json`:
 
 ```json
 {
@@ -69,28 +128,15 @@ Projects are configured in `data/projects.json`. To add a new project:
 }
 ```
 
-Then add your prototype HTML files to `/public/prototypes/my-project/v1/`.
+### 4. Deploy
 
-## Deleting Projects
-
-Hover over a project on the landing page to reveal the delete button. Deleting requires the admin password and will remove:
-- All prototype files
-- All comments and feedback
-- Project configuration
-
-## Adding Prototypes
-
-Place prototype HTML files in the `public/prototypes` directory:
-
-```
-public/
-└── prototypes/
-    └── my-project/
-        └── v1/
-            └── index.html
+```bash
+git add .
+git commit -m "Add my-project prototype"
+git push
 ```
 
-Prototypes can use any HTML/CSS/JS. Click capture is injected automatically.
+---
 
 ## Using PinUp
 
@@ -105,6 +151,8 @@ Prototypes can use any HTML/CSS/JS. Click capture is injected automatically.
 
 Toggle between modes by clicking the comments button in the header.
 
+---
+
 ## Authentication
 
 ### Client Access
@@ -116,9 +164,11 @@ Toggle between modes by clicking the comments button in the header.
 - Use global password from `PINUP_ADMIN_PASSWORD` env var
 - Full access: view, add, delete any comment, export
 
+---
+
 ## Export Format
 
-Admins can export comments as Cursor-ready markdown:
+Admins can export comments as Cursor/Claude-ready markdown:
 
 ```markdown
 ## PinUp Feedback Export
@@ -128,7 +178,7 @@ Admins can export comments as Cursor-ready markdown:
 
 ---
 
-### 📌 Comment #1
+### Comment #1
 **Element:** `.hero-section h1`
 **Viewport:** Desktop (1440px)
 **Author:** Sarah
@@ -138,9 +188,9 @@ Admins can export comments as Cursor-ready markdown:
 
 **Suggested action:**
 Update heading text in .hero-section h1 to be more specific/compelling.
+```
 
 ---
-```
 
 ## Deployment
 
@@ -152,12 +202,26 @@ Update heading text in .hero-section h1 to be more specific/compelling.
 4. Set `PINUP_ADMIN_PASSWORD` environment variable
 5. Deploy
 
+**Live URL:** https://pinup-chi.vercel.app
+
 ### Manual
 
 ```bash
 npm run build
 npm start
 ```
+
+---
+
+## Tech Stack
+
+- **Framework**: Next.js 16+ (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS v4 with Equator Design System tokens
+- **Database**: Upstash Redis
+- **Fonts**: Poppins (UI), Korolev (Display)
+
+---
 
 ## Project Structure
 
@@ -174,18 +238,30 @@ pinup/
 │   └── projects.json       # Project definitions
 ├── lib/                    # Utilities and helpers
 ├── types/                  # TypeScript types
-└── public/
-    └── prototypes/         # Prototype HTML files
+├── public/
+│   └── prototypes/         # Prototype HTML files
+├── PINUP-UPLOAD.md         # Upload command for Claude Code
+└── PINUP-SPECIFICATION.md  # Full product spec
 ```
 
-## Design System
+---
 
-PinUp uses the Equator Design System tokens:
+## Troubleshooting
 
-- **Primary Color**: Pink (#ff00a1)
-- **Font**: Poppins (UI), Korolev (Display headings)
-- **Spacing**: 8px base unit
-- **Border Radius**: 6px (sm), 12px (md), 20px (lg)
+### Prototype not loading?
+- Check that asset paths are relative (`./` not `/`)
+- For React Router apps, use `HashRouter` instead of `BrowserRouter`
+- Rebuild Vite projects with `base: './'` in config
+
+### Comments not saving?
+- Verify Upstash Redis credentials in `.env.local`
+- Check browser console for API errors
+
+### Can't delete project?
+- You need admin password to delete projects
+- Hover over project card to reveal delete button
+
+---
 
 ## License
 

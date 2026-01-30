@@ -34,7 +34,55 @@ Ask the user for the following (suggest defaults where possible):
 | **Version label** | Label for this version | "V1 - Initial Concept" |
 | **Prototype file** | Path to HTML file to upload (in current project) | "./prototype.html" or "./dist/index.html" |
 
-### Step 2: Create Prototype Directory
+### Step 2: Prepare Prototype for Subdirectory Hosting
+
+Before copying files, check and fix the prototype so it works when served from a subdirectory (`/prototypes/[project-id]/v1/`).
+
+#### For Vite/React/Vue projects (with a `dist` folder):
+
+1. **Set relative base path** - Update `vite.config.js` to use relative paths:
+   ```js
+   export default defineConfig({
+     base: './',
+     // ... other config
+   })
+   ```
+
+2. **Use HashRouter instead of BrowserRouter** (React Router only) - In `main.jsx` or `main.tsx`:
+   ```jsx
+   // Change this:
+   import { BrowserRouter } from 'react-router-dom'
+
+   // To this:
+   import { HashRouter } from 'react-router-dom'
+   ```
+   And update the JSX to use `<HashRouter>` instead of `<BrowserRouter>`.
+
+3. **Rebuild the project** after making these changes:
+   ```bash
+   npm run build
+   ```
+
+#### For plain HTML prototypes:
+
+1. **Use relative asset paths** - Ensure all CSS/JS references use relative paths:
+   ```html
+   <!-- Good -->
+   <script src="./assets/main.js"></script>
+   <link href="./styles/main.css" rel="stylesheet">
+
+   <!-- Bad - won't work in subdirectory -->
+   <script src="/assets/main.js"></script>
+   <link href="/styles/main.css" rel="stylesheet">
+   ```
+
+2. **Remove `crossorigin` attribute** from local assets (optional but recommended):
+   ```html
+   <!-- Better for same-origin files -->
+   <script type="module" src="./assets/index.js"></script>
+   ```
+
+### Step 3: Create Prototype Directory
 
 Create the directory structure in PinUp:
 
@@ -42,7 +90,7 @@ Create the directory structure in PinUp:
 /Users/jamie.jefferson/AppDev/PinUp/public/prototypes/[project-id]/v1/
 ```
 
-### Step 3: Copy Prototype Files
+### Step 4: Copy Prototype Files
 
 Copy the user's prototype HTML file (and any related assets) to:
 
@@ -52,7 +100,7 @@ Copy the user's prototype HTML file (and any related assets) to:
 
 If the prototype references local CSS/JS files, copy those too and update paths as needed.
 
-### Step 4: Update Project Config
+### Step 5: Update Project Config
 
 Add a new entry to `/Users/jamie.jefferson/AppDev/PinUp/data/projects.json`:
 
@@ -73,7 +121,7 @@ Add a new entry to `/Users/jamie.jefferson/AppDev/PinUp/data/projects.json`:
 
 **Important:** Add a comma after the previous project entry before adding the new one.
 
-### Step 5: Deploy to Live
+### Step 6: Deploy to Live
 
 Commit and push the changes to deploy:
 
@@ -84,7 +132,7 @@ git commit -m "Add [project-name] prototype"
 git push
 ```
 
-### Step 6: Confirm Success
+### Step 7: Confirm Success
 
 Tell the user:
 
@@ -92,7 +140,7 @@ Tell the user:
 ✓ Uploaded to PinUp and deployed!
 
 Project: [Project Name]
-Live URL: https://pinup.equator.dev/[project-id]
+Live URL: https://pinup-chi.vercel.app/[project-id]
 Client Password: [client-password]
 
 Share this URL and password with your client to collect feedback.
