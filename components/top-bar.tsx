@@ -37,7 +37,7 @@ export function TopBar({
 }: TopBarProps) {
   return (
     <header className="bg-[#1e1e1e] text-gray-300 border-b border-gray-800">
-      <div className="relative flex items-center justify-between px-3 h-10">
+      <div className="relative flex items-center justify-between px-3 h-14">
         {/* Left: Logo */}
         <div className="flex items-center">
           <button
