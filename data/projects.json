@@ -1,0 +1,36 @@
+{
+  "hotel-booking": {
+    "id": "hotel-booking",
+    "name": "Hotel Booking Prototype",
+    "clientPassword": "hotel-review-2025",
+    "versions": [
+      {
+        "id": "v1",
+        "label": "V1 - Initial Concept",
+        "url": "/prototypes/hotel-booking/v1/index.html"
+      },
+      {
+        "id": "v2",
+        "label": "V2 - Post-feedback",
+        "url": "/prototypes/hotel-booking/v2/index.html"
+      },
+      {
+        "id": "v3",
+        "label": "V3 - Current",
+        "url": "/prototypes/hotel-booking/v3/index.html"
+      }
+    ]
+  },
+  "dashboard": {
+    "id": "dashboard",
+    "name": "Analytics Dashboard",
+    "clientPassword": "dash-q1-review",
+    "versions": [
+      {
+        "id": "v1",
+        "label": "V1 - Concept",
+        "url": "/prototypes/dashboard/v1/index.html"
+      }
+    ]
+  }
+}

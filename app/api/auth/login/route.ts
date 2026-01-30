@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { LoginRequest, LoginResponse, AUTH_COOKIE_NAME, SESSION_DURATION_MS } from '@/types';
 import { validatePassword, createSession, encodeSession } from '@/lib/auth';
-import { projectExists } from '@/projects.config';
+import { projectExists } from '@/lib/projects';
 
 export async function POST(request: Request) {
   try {

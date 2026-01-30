@@ -50,27 +50,33 @@ Open [http://localhost:3000](http://localhost:3000) to see the project list.
 
 ## Adding Projects
 
-Projects are configured in `projects.config.ts`. To add a new project:
+Projects are configured in `data/projects.json`. To add a new project:
 
-```typescript
-// projects.config.ts
-export const projects: ProjectsConfig = {
+```json
+{
   "my-project": {
-    id: "my-project",
-    name: "My Project Prototype",
-    clientPassword: "client-review-password",
-    versions: [
-      { 
-        id: "v1", 
-        label: "V1 - Initial", 
-        url: "/prototypes/my-project/v1/index.html" 
+    "id": "my-project",
+    "name": "My Project Prototype",
+    "clientPassword": "client-review-password",
+    "versions": [
+      {
+        "id": "v1",
+        "label": "V1 - Initial",
+        "url": "/prototypes/my-project/v1/index.html"
       }
     ]
   }
-};
+}
 ```
 
 Then add your prototype HTML files to `/public/prototypes/my-project/v1/`.
+
+## Deleting Projects
+
+Hover over a project on the landing page to reveal the delete button. Deleting requires the admin password and will remove:
+- All prototype files
+- All comments and feedback
+- Project configuration
 
 ## Adding Prototypes
 
@@ -102,7 +108,7 @@ Toggle between modes by clicking the comments button in the header.
 ## Authentication
 
 ### Client Access
-- Use project-specific password from `projects.config.ts`
+- Use project-specific password from `data/projects.json`
 - Can view prototype, add comments, delete own comments
 - Cannot export or delete others' comments
 
@@ -164,11 +170,12 @@ pinup/
 │   ├── api/                # API routes
 │   └── page.tsx            # Landing page
 ├── components/             # React components
+├── data/
+│   └── projects.json       # Project definitions
 ├── lib/                    # Utilities and helpers
 ├── types/                  # TypeScript types
-├── public/
-│   └── prototypes/         # Prototype HTML files
-└── projects.config.ts      # Project definitions
+└── public/
+    └── prototypes/         # Prototype HTML files
 ```
 
 ## Design System

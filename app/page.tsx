@@ -1,6 +1,6 @@
-import Link from 'next/link';
 import { getAllProjects } from '@/lib/projects';
 import { Logo } from '@/components/logo';
+import { ProjectList } from '@/components/project-list';
 
 /**
  * Root landing page - shows available projects
@@ -30,37 +30,7 @@ export default function HomePage() {
             </h2>
           </div>
 
-          {projects.length === 0 ? (
-            <div className="p-8 text-center">
-              <p className="text-[var(--text-secondary)]">
-                No projects configured yet.
-              </p>
-              <p className="text-sm text-[var(--text-secondary)] mt-2">
-                Add projects in <code className="bg-[var(--surface-card-alt)] px-1 rounded">projects.config.ts</code>
-              </p>
-            </div>
-          ) : (
-            <ul className="divide-y divide-[var(--border-subtle)]">
-              {projects.map((project) => (
-                <li key={project.id}>
-                  <Link
-                    href={`/${project.id}/login`}
-                    className="flex items-center justify-between p-4 hover:bg-[var(--surface-card-alt)] transition-colors"
-                  >
-                    <div>
-                      <h3 className="font-medium text-[var(--text-primary)]">
-                        {project.name}
-                      </h3>
-                      <p className="text-sm text-[var(--text-secondary)]">
-                        {project.versions.length} version{project.versions.length !== 1 ? 's' : ''}
-                      </p>
-                    </div>
-                    <span className="text-[var(--action-primary)]">→</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
+          <ProjectList initialProjects={projects} />
         </div>
 
         {/* Footer */}

@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { AuthSession, AUTH_COOKIE_NAME, SESSION_DURATION_MS, UserType } from '@/types';
-import { getProject } from '@/projects.config';
+import { getProject } from '@/lib/projects';
 
 /**
  * Get the admin password from environment

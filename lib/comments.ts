@@ -164,3 +164,28 @@ export async function getCommentCount(
 
   return count || 0;
 }
+
+/**
+ * Delete all comments for a project (all versions)
+ */
+export async function deleteProjectComments(projectId: string): Promise<number> {
+  const supabase = getSupabase();
+
+  // First get the count
+  const { count } = await supabase
+    .from('comments')
+    .select('*', { count: 'exact', head: true })
+    .eq('project_id', projectId);
+
+  // Then delete all
+  const { error } = await supabase
+    .from('comments')
+    .delete()
+    .eq('project_id', projectId);
+
+  if (error) {
+    throw new Error(`Failed to delete project comments: ${error.message}`);
+  }
+
+  return count || 0;
+}

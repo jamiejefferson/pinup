@@ -54,19 +54,18 @@ If the prototype references local CSS/JS files, copy those too and update paths 
 
 ### Step 4: Update Project Config
 
-Add a new entry to `/Users/jamie.jefferson/AppDev/PinUp/projects.config.ts`:
+Add a new entry to `/Users/jamie.jefferson/AppDev/PinUp/data/projects.json`:
 
-```typescript
-// Add this to the projects object:
+```json
 "[project-id]": {
-  id: "[project-id]",
-  name: "[Project Name]",
-  clientPassword: "[client-password]",
-  versions: [
-    { 
-      id: "v1", 
-      label: "[Version Label]", 
-      url: "/prototypes/[project-id]/v1/index.html" 
+  "id": "[project-id]",
+  "name": "[Project Name]",
+  "clientPassword": "[client-password]",
+  "versions": [
+    {
+      "id": "v1",
+      "label": "[Version Label]",
+      "url": "/prototypes/[project-id]/v1/index.html"
     }
   ]
 }
@@ -94,16 +93,16 @@ Share this URL and password with your client to collect feedback.
 
 If the user wants to add a new version to an existing project:
 
-1. Find the existing project in `projects.config.ts`
+1. Find the existing project in `data/projects.json`
 2. Determine next version number (v2, v3, etc.)
 3. Create directory: `/Users/jamie.jefferson/AppDev/PinUp/public/prototypes/[project-id]/v[N]/`
 4. Copy prototype files to the new version directory
 5. Add new version to the project's `versions` array:
 
-```typescript
-versions: [
-  { id: "v1", label: "V1 - Initial", url: "/prototypes/[project-id]/v1/index.html" },
-  { id: "v2", label: "[New Version Label]", url: "/prototypes/[project-id]/v2/index.html" }  // ← Add this
+```json
+"versions": [
+  { "id": "v1", "label": "V1 - Initial", "url": "/prototypes/[project-id]/v1/index.html" },
+  { "id": "v2", "label": "[New Version Label]", "url": "/prototypes/[project-id]/v2/index.html" }
 ]
 ```
 
