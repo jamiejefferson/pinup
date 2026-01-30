@@ -1,3 +1,4 @@
+import 'server-only';
 import { Project, ProjectVersion, ProjectsConfig } from '@/types';
 import fs from 'fs';
 import path from 'path';

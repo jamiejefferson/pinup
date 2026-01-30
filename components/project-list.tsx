@@ -56,18 +56,18 @@ export function ProjectList({ initialProjects }: ProjectListProps) {
               <span className="text-[var(--action-primary)]">→</span>
             </Link>
             
-            {/* Delete button - appears on hover */}
+            {/* Delete button */}
             <button
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 setProjectToDelete(project);
               }}
-              className="absolute right-12 top-1/2 -translate-y-1/2 p-2 rounded-md opacity-0 group-hover:opacity-100 hover:bg-red-500/20 transition-all"
+              className="absolute right-12 top-1/2 -translate-y-1/2 p-2 rounded-md hover:bg-red-500/20 transition-all"
               title="Delete project"
             >
               <svg 
-                className="w-4 h-4 text-gray-400 hover:text-red-400" 
+                className="w-4 h-4 text-gray-400 hover:text-red-400 transition-colors" 
                 fill="none" 
                 stroke="currentColor" 
                 viewBox="0 0 24 24"

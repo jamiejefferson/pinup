@@ -1,7 +1,25 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { AUTH_COOKIE_NAME } from '@/types';
-import { decodeSession, isSessionExpired } from '@/lib/auth';
+import { AUTH_COOKIE_NAME, AuthSession } from '@/types';
+
+/**
+ * Decode session from cookie string (Edge-compatible)
+ */
+function decodeSession(encoded: string): AuthSession | null {
+  try {
+    const decoded = atob(encoded);
+    return JSON.parse(decoded) as AuthSession;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Check if session is expired
+ */
+function isSessionExpired(session: AuthSession): boolean {
+  return new Date(session.expiresAt) < new Date();
+}
 
 /**
  * Middleware to protect project routes
@@ -30,14 +48,14 @@ export function middleware(request: NextRequest) {
 
   // Extract project ID from path (e.g., /hotel-booking -> hotel-booking)
   const projectId = pathname.split('/')[1];
-  
+
   if (!projectId) {
     return NextResponse.next();
   }
 
   // Check for auth cookie
   const sessionCookie = request.cookies.get(AUTH_COOKIE_NAME);
-  
+
   if (!sessionCookie?.value) {
     // No session, redirect to login
     return NextResponse.redirect(new URL(`/${projectId}/login`, request.url));
@@ -45,7 +63,7 @@ export function middleware(request: NextRequest) {
 
   // Decode and validate session
   const session = decodeSession(sessionCookie.value);
-  
+
   if (!session) {
     // Invalid session, redirect to login
     return NextResponse.redirect(new URL(`/${projectId}/login`, request.url));
