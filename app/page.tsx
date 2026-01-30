@@ -2,6 +2,9 @@ import { getAllProjects } from '@/lib/projects';
 import { Logo } from '@/components/logo';
 import { ProjectList } from '@/components/project-list';
 
+// Force dynamic rendering so new projects appear immediately
+export const dynamic = 'force-dynamic';
+
 /**
  * Root landing page - shows available projects
  * In production, this could redirect to a specific project or show a project selector
