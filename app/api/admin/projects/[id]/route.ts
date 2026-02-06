@@ -1,6 +1,4 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
 import { getAdminSession } from '@/lib/auth';
 import {
   getProjectById,
@@ -9,6 +7,7 @@ import {
   isProjectOwner,
 } from '@/lib/projects-db';
 import { deleteProjectComments } from '@/lib/comments';
+import { deleteProjectFiles } from '@/lib/uploads';
 import { logAdminActivity } from '@/lib/admins';
 
 interface UpdateProjectRequest {
@@ -137,17 +136,9 @@ export async function DELETE(
       // Continue with deletion even if comments fail
     }
 
-    // 2. Delete prototype files
-    const prototypesDir = path.join(
-      process.cwd(),
-      'public',
-      'prototypes',
-      projectId
-    );
+    // 2. Delete prototype files from Supabase Storage
     try {
-      if (fs.existsSync(prototypesDir)) {
-        fs.rmSync(prototypesDir, { recursive: true, force: true });
-      }
+      await deleteProjectFiles(projectId);
     } catch (error) {
       console.error('Failed to delete prototype files:', error);
       // Continue with deletion even if files fail

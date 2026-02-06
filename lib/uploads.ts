@@ -1,9 +1,10 @@
 import 'server-only';
-import fs from 'fs';
 import path from 'path';
 import AdmZip from 'adm-zip';
+import { getSupabase } from './supabase';
 
-const PROTOTYPES_DIR = path.join(process.cwd(), 'public', 'prototypes');
+// Storage bucket name (must match what was created in Supabase dashboard)
+const STORAGE_BUCKET = 'Prototypes';
 
 // Allowed file extensions for prototype uploads
 const ALLOWED_EXTENSIONS = new Set([
@@ -32,8 +33,43 @@ const ALLOWED_EXTENSIONS = new Set([
   '.ogg',
 ]);
 
+// MIME types for common file extensions
+const MIME_TYPES: Record<string, string> = {
+  '.html': 'text/html',
+  '.htm': 'text/html',
+  '.css': 'text/css',
+  '.js': 'application/javascript',
+  '.mjs': 'application/javascript',
+  '.json': 'application/json',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.svg': 'image/svg+xml',
+  '.webp': 'image/webp',
+  '.ico': 'image/x-icon',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.ttf': 'font/ttf',
+  '.otf': 'font/otf',
+  '.eot': 'application/vnd.ms-fontobject',
+  '.mp4': 'video/mp4',
+  '.webm': 'video/webm',
+  '.mp3': 'audio/mpeg',
+  '.wav': 'audio/wav',
+  '.ogg': 'audio/ogg',
+};
+
 // Maximum file size (50MB)
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
+
+/**
+ * Get MIME type for a file
+ */
+function getMimeType(filename: string): string {
+  const ext = path.extname(filename).toLowerCase();
+  return MIME_TYPES[ext] || 'application/octet-stream';
+}
 
 /**
  * Validate file extension
@@ -59,93 +95,174 @@ function sanitizePath(filePath: string): string {
 }
 
 /**
- * Extract a ZIP buffer to the prototypes directory
+ * Get the proxy URL for a file (serves from same origin to enable script injection)
+ */
+function getProxyUrl(storagePath: string): string {
+  return `/api/prototypes/${storagePath}`;
+}
+
+/**
+ * Extract a ZIP buffer and upload to Supabase Storage
  */
 export async function extractPrototype(
   zipBuffer: Buffer,
   projectId: string,
   versionId: string
 ): Promise<{ url: string; fileCount: number }> {
-  const targetDir = path.join(PROTOTYPES_DIR, projectId, versionId);
-
-  // Ensure the target directory exists
-  await fs.promises.mkdir(targetDir, { recursive: true });
+  const supabase = getSupabase();
+  const basePath = `${projectId}/${versionId}`;
 
   let fileCount = 0;
   let hasIndexHtml = false;
+  const uploadedFiles: string[] = [];
 
   try {
     const zip = new AdmZip(zipBuffer);
     const entries = zip.getEntries();
 
+    // Process all entries
     for (const entry of entries) {
       const entryPath = sanitizePath(entry.entryName);
 
-      // Skip empty paths or disallowed files
-      if (!entryPath || !isAllowedFile(entryPath)) {
+      // Skip empty paths, directories, or disallowed files
+      if (!entryPath || entry.isDirectory || !isAllowedFile(entryPath)) {
         continue;
       }
 
-      const fullPath = path.join(targetDir, entryPath);
-
-      // Ensure the path is within the target directory (prevent path traversal)
-      if (!fullPath.startsWith(targetDir)) {
-        continue;
+      // Check for index.html
+      if (entryPath === 'index.html' || entryPath.endsWith('/index.html')) {
+        hasIndexHtml = true;
       }
 
-      if (entry.isDirectory) {
-        await fs.promises.mkdir(fullPath, { recursive: true });
-      } else {
-        // Ensure parent directory exists
-        await fs.promises.mkdir(path.dirname(fullPath), { recursive: true });
+      // Get file data and upload to Supabase Storage
+      const data = entry.getData();
+      const storagePath = `${basePath}/${entryPath}`;
+      const mimeType = getMimeType(entryPath);
 
-        // Check for index.html
-        if (entryPath === 'index.html' || entryPath.endsWith('/index.html')) {
-          hasIndexHtml = true;
-        }
+      const { error } = await supabase.storage
+        .from(STORAGE_BUCKET)
+        .upload(storagePath, data, {
+          contentType: mimeType,
+          upsert: true,
+        });
 
-        // Write the file
-        const data = entry.getData();
-        await fs.promises.writeFile(fullPath, data);
-        fileCount++;
+      if (error) {
+        console.error(`Failed to upload ${storagePath}:`, error);
+        throw new Error(`Failed to upload file: ${entryPath}`);
       }
+
+      uploadedFiles.push(storagePath);
+      fileCount++;
     }
 
     // Verify we have an index.html
     if (!hasIndexHtml) {
-      // Check if there's an index.html at the root
-      const indexPath = path.join(targetDir, 'index.html');
-      if (!fs.existsSync(indexPath)) {
-        // Clean up and throw error
-        await fs.promises.rm(targetDir, { recursive: true, force: true });
-        throw new Error('ZIP must contain an index.html file');
-      }
+      // Clean up uploaded files
+      await deleteVersionFiles(projectId, versionId);
+      throw new Error('ZIP must contain an index.html file');
     }
 
+    // Get the proxy URL for the index.html (same-origin for script injection)
+    const indexPath = `${basePath}/index.html`;
+    const proxyUrl = getProxyUrl(indexPath);
+
     return {
-      url: `/prototypes/${projectId}/${versionId}/index.html`,
+      url: proxyUrl,
       fileCount,
     };
   } catch (error) {
-    // Clean up on error
-    if (fs.existsSync(targetDir)) {
-      await fs.promises.rm(targetDir, { recursive: true, force: true });
+    // Clean up on error (if any files were uploaded)
+    if (uploadedFiles.length > 0) {
+      try {
+        await deleteVersionFiles(projectId, versionId);
+      } catch {
+        // Ignore cleanup errors
+      }
     }
     throw error;
   }
 }
 
 /**
- * Delete a version's files
+ * Recursively list all files in a storage path
+ */
+async function listAllFiles(
+  basePath: string,
+  supabase: ReturnType<typeof getSupabase>
+): Promise<string[]> {
+  const allFiles: string[] = [];
+
+  const { data: items, error } = await supabase.storage
+    .from(STORAGE_BUCKET)
+    .list(basePath, { limit: 1000 });
+
+  if (error || !items) {
+    return allFiles;
+  }
+
+  for (const item of items) {
+    const itemPath = basePath ? `${basePath}/${item.name}` : item.name;
+    
+    if (item.id === null) {
+      // It's a folder - recurse into it
+      const nestedFiles = await listAllFiles(itemPath, supabase);
+      allFiles.push(...nestedFiles);
+    } else {
+      // It's a file
+      allFiles.push(itemPath);
+    }
+  }
+
+  return allFiles;
+}
+
+/**
+ * Delete a version's files from Supabase Storage
  */
 export async function deleteVersionFiles(
   projectId: string,
   versionId: string
 ): Promise<void> {
-  const targetDir = path.join(PROTOTYPES_DIR, projectId, versionId);
+  const supabase = getSupabase();
+  const basePath = `${projectId}/${versionId}`;
 
-  if (fs.existsSync(targetDir)) {
-    await fs.promises.rm(targetDir, { recursive: true, force: true });
+  // List all files recursively
+  const allFiles = await listAllFiles(basePath, supabase);
+
+  if (allFiles.length === 0) {
+    return;
+  }
+
+  // Delete all files (Supabase allows batch delete up to 1000 files)
+  const { error: deleteError } = await supabase.storage
+    .from(STORAGE_BUCKET)
+    .remove(allFiles);
+
+  if (deleteError) {
+    console.error('Failed to delete files:', deleteError);
+  }
+}
+
+/**
+ * Delete all files for a project from Supabase Storage
+ */
+export async function deleteProjectFiles(projectId: string): Promise<void> {
+  const supabase = getSupabase();
+
+  // List all files recursively under the project folder
+  const allFiles = await listAllFiles(projectId, supabase);
+
+  if (allFiles.length === 0) {
+    return;
+  }
+
+  // Delete all files (Supabase allows batch delete up to 1000 files)
+  const { error: deleteError } = await supabase.storage
+    .from(STORAGE_BUCKET)
+    .remove(allFiles);
+
+  if (deleteError) {
+    console.error('Failed to delete project files:', deleteError);
   }
 }
 
