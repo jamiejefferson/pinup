@@ -13,7 +13,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
   const { version: versionId } = await searchParams;
   
   // Get project
-  const project = getProject(projectId);
+  const project = await getProject(projectId);
   if (!project) {
     notFound();
   }

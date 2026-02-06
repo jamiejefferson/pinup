@@ -9,8 +9,8 @@ export const dynamic = 'force-dynamic';
  * Root landing page - shows available projects
  * In production, this could redirect to a specific project or show a project selector
  */
-export default function HomePage() {
-  const projects = getAllProjects();
+export default async function HomePage() {
+  const projects = await getAllProjects();
 
   return (
     <div className="min-h-screen bg-[var(--surface-bg)] flex items-center justify-center p-4">

@@ -53,7 +53,7 @@ export async function DELETE(
     }
 
     // Check if project exists
-    const project = getProject(projectId);
+    const project = await getProject(projectId);
     if (!project) {
       return NextResponse.json<DeleteResponse>(
         { success: false, error: 'Project not found' },
@@ -81,11 +81,11 @@ export async function DELETE(
       // Continue with deletion even if files fail
     }
 
-    // 3. Remove from config
-    const deleted = deleteProjectFromConfig(projectId);
+    // 3. Remove from database
+    const deleted = await deleteProjectFromConfig(projectId);
     if (!deleted) {
       return NextResponse.json<DeleteResponse>(
-        { success: false, error: 'Failed to remove project from config' },
+        { success: false, error: 'Failed to remove project from database' },
         { status: 500 }
       );
     }

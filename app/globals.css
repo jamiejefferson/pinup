@@ -93,6 +93,14 @@
   --status-error: var(--eqtr-red);
   --status-info: var(--eqtr-blue);
 
+  /* Role Tokens - Accent (for buttons, links, etc.) */
+  --accent-primary: var(--eqtr-pink);
+  --accent-primary-hover: var(--eqtr-purple);
+
+  /* Role Tokens - Inputs */
+  --input-bg: var(--eqtr-white);
+  --text-placeholder: var(--eqtr-grey);
+
   /* Spacing (8px base) */
   --space-1: 4px;
   --space-2: 8px;

@@ -91,7 +91,7 @@ export async function GET(request: Request) {
     }
 
     // Get project and version info
-    const project = getProject(projectId);
+    const project = await getProject(projectId);
     if (!project) {
       return NextResponse.json(
         { error: 'Project not found' },

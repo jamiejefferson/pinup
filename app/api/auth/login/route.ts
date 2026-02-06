@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     }
 
     // Check if project exists
-    if (!projectExists(projectId)) {
+    if (!(await projectExists(projectId))) {
       return NextResponse.json<LoginResponse>(
         { success: false, error: 'Project not found' },
         { status: 404 }
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
     }
 
     // Validate password
-    const userType = validatePassword(projectId, password);
+    const userType = await validatePassword(projectId, password);
     
     if (!userType) {
       return NextResponse.json<LoginResponse>(
