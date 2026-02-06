@@ -1,46 +1,30 @@
 # Upload to PinUp
 
-> **Copy this file to your project folder** to enable the "Upload to PinUp" command with Claude Code.
-
-## Trigger Phrases
-
-When the user says any of these, follow the instructions below:
-- "Upload to PinUp"
-- "Add to PinUp"
-- "Publish to PinUp"
-- "Share on PinUp"
+> **Note:** PinUp now has a built-in admin portal for uploading prototypes. This file documents the legacy Claude Code integration and the new recommended workflow.
 
 ---
 
-## PinUp Location
+## Recommended: Use Admin Portal
 
-```
-/Users/jamie.jefferson/AppDev/PinUp
-```
+The easiest way to upload prototypes is through the PinUp admin portal:
+
+1. Go to `https://your-pinup-url.com/admin/login`
+2. Log in with your admin credentials
+3. Create a project or select an existing one
+4. Click "Upload Version"
+5. Upload your prototype as a ZIP file
+
+The admin portal handles everything automatically - no manual file copying or config editing needed.
 
 ---
 
-## Instructions for Claude Code
+## Preparing Your Prototype
 
-### Step 1: Gather Information
+Before uploading (either via admin portal or manually), ensure your prototype is configured for subdirectory hosting.
 
-Ask the user for the following (suggest defaults where possible):
+### For Vite/React/Vue Projects
 
-| Field | Description | Example |
-|-------|-------------|---------|
-| **Project name** | Display name for the project | "Mobile App Redesign" |
-| **Project ID** | URL slug (auto-generate from name: lowercase, spaces → dashes) | "mobile-app-redesign" |
-| **Client password** | Password for client access | "mobile-review-2026" |
-| **Version label** | Label for this version | "V1 - Initial Concept" |
-| **Prototype file** | Path to HTML file to upload (in current project) | "./prototype.html" or "./dist/index.html" |
-
-### Step 2: Prepare Prototype for Subdirectory Hosting
-
-Before copying files, check and fix the prototype so it works when served from a subdirectory (`/prototypes/[project-id]/v1/`).
-
-#### For Vite/React/Vue projects (with a `dist` folder):
-
-1. **Set relative base path** - Update `vite.config.js` to use relative paths:
+1. **Set relative base path** in `vite.config.js`:
    ```js
    export default defineConfig({
      base: './',
@@ -48,130 +32,132 @@ Before copying files, check and fix the prototype so it works when served from a
    })
    ```
 
-2. **Use HashRouter instead of BrowserRouter** (React Router only) - In `main.jsx` or `main.tsx`:
+2. **Use HashRouter instead of BrowserRouter** (React Router only):
    ```jsx
    // Change this:
    import { BrowserRouter } from 'react-router-dom'
-
+   
    // To this:
    import { HashRouter } from 'react-router-dom'
    ```
-   And update the JSX to use `<HashRouter>` instead of `<BrowserRouter>`.
 
-3. **Rebuild the project** after making these changes:
+3. **Rebuild the project**:
    ```bash
    npm run build
    ```
 
-#### For plain HTML prototypes:
+4. **Create ZIP from dist folder**:
+   ```bash
+   cd dist
+   zip -r ../prototype.zip .
+   ```
 
-1. **Use relative asset paths** - Ensure all CSS/JS references use relative paths:
+### For Plain HTML Prototypes
+
+1. **Use relative asset paths**:
    ```html
    <!-- Good -->
    <script src="./assets/main.js"></script>
    <link href="./styles/main.css" rel="stylesheet">
-
+   
    <!-- Bad - won't work in subdirectory -->
    <script src="/assets/main.js"></script>
-   <link href="/styles/main.css" rel="stylesheet">
    ```
 
-2. **Remove `crossorigin` attribute** from local assets (optional but recommended):
-   ```html
-   <!-- Better for same-origin files -->
-   <script type="module" src="./assets/index.js"></script>
+2. **Create ZIP with index.html at root**:
+   ```bash
+   zip -r prototype.zip index.html assets/ styles/
    ```
-
-### Step 3: Create Prototype Directory
-
-Create the directory structure in PinUp:
-
-```
-/Users/jamie.jefferson/AppDev/PinUp/public/prototypes/[project-id]/v1/
-```
-
-### Step 4: Copy Prototype Files
-
-Copy the user's prototype HTML file (and any related assets) to:
-
-```
-/Users/jamie.jefferson/AppDev/PinUp/public/prototypes/[project-id]/v1/index.html
-```
-
-If the prototype references local CSS/JS files, copy those too and update paths as needed.
-
-### Step 5: Update Project Config
-
-Add a new entry to `/Users/jamie.jefferson/AppDev/PinUp/data/projects.json`:
-
-```json
-"[project-id]": {
-  "id": "[project-id]",
-  "name": "[Project Name]",
-  "clientPassword": "[client-password]",
-  "versions": [
-    {
-      "id": "v1",
-      "label": "[Version Label]",
-      "url": "/prototypes/[project-id]/v1/index.html"
-    }
-  ]
-}
-```
-
-**Important:** Add a comma after the previous project entry before adding the new one.
-
-### Step 6: Deploy to Live
-
-Commit and push the changes to deploy:
-
-```bash
-cd /Users/jamie.jefferson/AppDev/PinUp
-git add data/projects.json public/prototypes/[project-id]/
-git commit -m "Add [project-name] prototype"
-git push
-```
-
-### Step 7: Confirm Success
-
-Tell the user:
-
-```
-✓ Uploaded to PinUp and deployed!
-
-Project: [Project Name]
-Live URL: https://pinup-chi.vercel.app/[project-id]
-Client Password: [client-password]
-
-Share this URL and password with your client to collect feedback.
-```
 
 ---
 
-## Adding a New Version to Existing Project
+## ZIP File Requirements
 
-If the user wants to add a new version to an existing project:
+- Must contain `index.html` at the root level
+- Maximum file size: 50MB
+- Allowed file types:
+  - HTML, CSS, JavaScript
+  - Images (PNG, JPG, GIF, SVG, WebP, ICO)
+  - Fonts (WOFF, WOFF2, TTF, OTF, EOT)
+  - Media (MP4, WebM, MP3, WAV, OGG)
+  - JSON
 
-1. Find the existing project in `data/projects.json`
-2. Determine next version number (v2, v3, etc.)
-3. Create directory: `/Users/jamie.jefferson/AppDev/PinUp/public/prototypes/[project-id]/v[N]/`
-4. Copy prototype files to the new version directory
-5. Add new version to the project's `versions` array:
+---
 
-```json
-"versions": [
-  { "id": "v1", "label": "V1 - Initial", "url": "/prototypes/[project-id]/v1/index.html" },
-  { "id": "v2", "label": "[New Version Label]", "url": "/prototypes/[project-id]/v2/index.html" }
-]
-```
+## Claude Code Integration (Legacy)
 
-6. Deploy the new version:
+If you prefer to use Claude Code for uploads, you can still do manual uploads:
+
+### Trigger Phrases
+
+When the user says any of these, follow the instructions below:
+- "Upload to PinUp"
+- "Add to PinUp"
+- "Publish to PinUp"
+
+### Instructions for Claude Code
+
+#### Step 1: Gather Information
+
+Ask the user for:
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| **Project name** | Display name | "Mobile App Redesign" |
+| **Project ID** | URL slug (auto-generate) | "mobile-app-redesign" |
+| **Client password** | Password for client access | "mobile-review-2026" |
+| **Version label** | Label for this version | "V1 - Initial Concept" |
+| **Prototype file** | Path to ZIP or HTML | "./dist" or "./prototype.html" |
+
+#### Step 2: Prepare Prototype
+
+Follow the preparation steps above to ensure the prototype works in a subdirectory.
+
+#### Step 3: Upload via Admin Portal API
+
+The recommended approach is to use the admin API:
 
 ```bash
-cd /Users/jamie.jefferson/AppDev/PinUp
-git add data/projects.json public/prototypes/[project-id]/
-git commit -m "Add [project-name] v[N]"
-git push
+# Create project (if new)
+curl -X POST https://your-pinup-url.com/api/admin/projects \
+  -H "Cookie: pinup_admin_session=..." \
+  -H "Content-Type: application/json" \
+  -d '{"id": "project-id", "name": "Project Name", "clientPassword": "password"}'
+
+# Upload version
+curl -X POST https://your-pinup-url.com/api/admin/projects/project-id/versions \
+  -H "Cookie: pinup_admin_session=..." \
+  -F "file=@prototype.zip" \
+  -F "label=V1 - Initial"
+```
+
+#### Alternative: Direct Database + Storage
+
+For local development, you can also:
+
+1. Upload files to Supabase Storage bucket `Prototypes/{project-id}/{version-id}/`
+2. Add project record to `projects` table
+3. Add version record to `project_versions` table
+
+---
+
+## Adding New Versions
+
+To add a new version to an existing project:
+
+### Via Admin Portal (Recommended)
+
+1. Go to `/admin/projects/[project-id]`
+2. Click "Upload New Version"
+3. Enter version label and upload ZIP
+
+### Via API
+
+```bash
+curl -X POST https://your-pinup-url.com/api/admin/projects/project-id/versions \
+  -H "Cookie: pinup_admin_session=..." \
+  -F "file=@prototype-v2.zip" \
+  -F "label=V2 - Post-feedback"
 ```
 
 ---
@@ -181,5 +167,5 @@ git push
 - **Project IDs** must be lowercase with dashes (no spaces or special characters)
 - **Prototypes** can use any HTML/CSS/JS - PinUp injects click tracking automatically
 - **Comments** are stored per-version, so each version has its own feedback thread
-- **Browse vs Comment Mode**: Panel closed = normal browsing; Panel open = comment mode
-- Run `npm run dev` in PinUp to start the local server if not already running
+- **Storage**: Prototypes are stored in Supabase Storage, not local filesystem
+- **Proxy**: Files are served via `/api/prototypes/...` to enable comment dot injection
