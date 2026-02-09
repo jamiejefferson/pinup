@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { CreateCommentRequest } from '@/types';
-import { getSession } from '@/lib/auth';
+import { getProjectSession } from '@/lib/auth';
 import { createComment, getComments } from '@/lib/comments';
 
 /**
@@ -19,20 +19,12 @@ export async function GET(request: Request) {
       );
     }
 
-    // Verify session
-    const session = await getSession();
+    // Verify session (supports both client and admin sessions)
+    const session = await getProjectSession(projectId);
     if (!session) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
-      );
-    }
-
-    // Check project access
-    if (session.projectId !== projectId) {
-      return NextResponse.json(
-        { error: 'Access denied to this project' },
-        { status: 403 }
       );
     }
 
@@ -55,20 +47,12 @@ export async function POST(request: Request) {
   try {
     const body: CreateCommentRequest = await request.json();
 
-    // Verify session
-    const session = await getSession();
+    // Verify session (supports both client and admin sessions)
+    const session = await getProjectSession(body.projectId);
     if (!session) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
-      );
-    }
-
-    // Check project access
-    if (session.projectId !== body.projectId) {
-      return NextResponse.json(
-        { error: 'Access denied to this project' },
-        { status: 403 }
       );
     }
 

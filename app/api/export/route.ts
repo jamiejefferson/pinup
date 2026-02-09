@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSession } from '@/lib/auth';
+import { getProjectSession } from '@/lib/auth';
 import { getComments } from '@/lib/comments';
 import { getProject, getVersion } from '@/lib/projects';
 import { Comment } from '@/types';
@@ -65,8 +65,8 @@ export async function GET(request: Request) {
       );
     }
 
-    // Verify session
-    const session = await getSession();
+    // Verify session (supports both client and admin sessions)
+    const session = await getProjectSession(projectId);
     if (!session) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -78,14 +78,6 @@ export async function GET(request: Request) {
     if (session.userType !== 'admin') {
       return NextResponse.json(
         { error: 'Export is only available to admins' },
-        { status: 403 }
-      );
-    }
-
-    // Check project access
-    if (session.projectId !== projectId) {
-      return NextResponse.json(
-        { error: 'Access denied to this project' },
         { status: 403 }
       );
     }

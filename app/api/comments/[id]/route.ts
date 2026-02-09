@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSession, canDeleteComment } from '@/lib/auth';
+import { getProjectSession, canDeleteComment } from '@/lib/auth';
 import { getComment, deleteComment } from '@/lib/comments';
 
 interface RouteContext {
@@ -16,18 +16,9 @@ export async function DELETE(
   try {
     const { id } = await context.params;
 
-    // Verify session
-    const session = await getSession();
-    if (!session) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
     // Get the comment to verify ownership
     const comment = await getComment(id);
-    
+
     if (!comment) {
       return NextResponse.json(
         { error: 'Comment not found' },
@@ -35,11 +26,12 @@ export async function DELETE(
       );
     }
 
-    // Check project access
-    if (session.projectId !== comment.projectId) {
+    // Verify session (supports both client and admin sessions)
+    const session = await getProjectSession(comment.projectId);
+    if (!session) {
       return NextResponse.json(
-        { error: 'Access denied to this project' },
-        { status: 403 }
+        { error: 'Unauthorized' },
+        { status: 401 }
       );
     }
 
