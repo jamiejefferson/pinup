@@ -155,7 +155,7 @@ export async function extractPrototype(
 
       if (error) {
         console.error(`Failed to upload ${storagePath}:`, error);
-        throw new Error(`Failed to upload file: ${entryPath}`);
+        throw new Error(`Failed to upload file: ${entryPath} (${error.message})`);
       }
 
       uploadedFiles.push(storagePath);
