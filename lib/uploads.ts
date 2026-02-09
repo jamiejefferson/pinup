@@ -113,7 +113,8 @@ export async function extractPrototype(
   const basePath = `${projectId}/${versionId}`;
 
   let fileCount = 0;
-  let hasIndexHtml = false;
+  let entryHtmlFile: string | null = null;
+  const htmlFiles: string[] = [];
   const uploadedFiles: string[] = [];
 
   try {
@@ -136,9 +137,13 @@ export async function extractPrototype(
         continue;
       }
 
-      // Check for index.html
-      if (entryPath === 'index.html' || entryPath.endsWith('/index.html')) {
-        hasIndexHtml = true;
+      // Track HTML files for entry point detection
+      const ext = path.extname(entryPath).toLowerCase();
+      if (ext === '.html' || ext === '.htm') {
+        if (entryPath === 'index.html' || entryPath.endsWith('/index.html')) {
+          entryHtmlFile = entryPath;
+        }
+        htmlFiles.push(entryPath);
       }
 
       // Get file data and upload to Supabase Storage
@@ -162,15 +167,21 @@ export async function extractPrototype(
       fileCount++;
     }
 
-    // Verify we have an index.html
-    if (!hasIndexHtml) {
-      // Clean up uploaded files
-      await deleteVersionFiles(projectId, versionId);
-      throw new Error('ZIP must contain an index.html file');
+    // If no index.html, use the shallowest HTML file as entry point
+    if (!entryHtmlFile && htmlFiles.length > 0) {
+      entryHtmlFile = htmlFiles.sort(
+        (a, b) => a.split('/').length - b.split('/').length
+      )[0];
     }
 
-    // Get the proxy URL for the index.html (same-origin for script injection)
-    const indexPath = `${basePath}/index.html`;
+    // Verify we have at least one HTML file
+    if (!entryHtmlFile) {
+      await deleteVersionFiles(projectId, versionId);
+      throw new Error('ZIP must contain at least one HTML file');
+    }
+
+    // Get the proxy URL for the entry HTML file
+    const indexPath = `${basePath}/${entryHtmlFile}`;
     const proxyUrl = getProxyUrl(indexPath);
 
     return {
