@@ -151,14 +151,12 @@ export default async function AdminDashboardPage() {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="px-2 py-1 text-xs text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 rounded transition-colors"
-                      onClick={(e) => e.stopPropagation()}
                     >
                       View
                     </a>
                     <Link
                       href={`/admin/projects/${project.id}`}
                       className="px-2 py-1 text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-card-alt)] rounded transition-colors"
-                      onClick={(e) => e.stopPropagation()}
                     >
                       Manage
                     </Link>
