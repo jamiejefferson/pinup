@@ -1,16 +1,25 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Logo } from '@/components/logo';
 import { AdminLoginResponse } from '@/types';
 
-export default function AdminLoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // Pre-fill email from URL if provided
+  useEffect(() => {
+    const emailParam = searchParams.get('email');
+    if (emailParam) {
+      setEmail(emailParam);
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,6 +48,80 @@ export default function AdminLoginPage() {
     }
   };
 
+  // Check if email was pre-filled to auto-focus password
+  const emailFromUrl = searchParams.get('email');
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Email */}
+      <div>
+        <label
+          htmlFor="email"
+          className="block text-sm font-medium text-[var(--text-primary)] mb-1.5"
+        >
+          Email
+        </label>
+        <input
+          id="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="you@example.com"
+          required
+          autoComplete="email"
+          autoFocus={!emailFromUrl}
+          className="w-full px-3 py-2.5 bg-[var(--input-bg)] border border-[var(--border-default)] rounded-[var(--radius-md)] text-[var(--text-primary)] placeholder:text-[var(--text-placeholder)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition-all"
+        />
+      </div>
+
+      {/* Password */}
+      <div>
+        <label
+          htmlFor="password"
+          className="block text-sm font-medium text-[var(--text-primary)] mb-1.5"
+        >
+          Password
+        </label>
+        <input
+          id="password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="••••••••"
+          required
+          autoComplete="current-password"
+          autoFocus={!!emailFromUrl}
+          className="w-full px-3 py-2.5 bg-[var(--input-bg)] border border-[var(--border-default)] rounded-[var(--radius-md)] text-[var(--text-primary)] placeholder:text-[var(--text-placeholder)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition-all"
+        />
+      </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-[var(--radius-md)] px-3 py-2">
+          {error}
+        </div>
+      )}
+
+      {/* Submit Button */}
+      <button
+        type="submit"
+        disabled={isLoading}
+        className="w-full py-2.5 px-4 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] disabled:bg-[var(--accent-primary)]/50 text-white font-medium rounded-[var(--radius-md)] transition-colors disabled:cursor-not-allowed flex items-center justify-center gap-2"
+      >
+        {isLoading ? (
+          <>
+            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            Signing in...
+          </>
+        ) : (
+          'Sign In'
+        )}
+      </button>
+    </form>
+  );
+}
+
+export default function AdminLoginPage() {
   return (
     <div className="min-h-screen bg-[var(--surface-bg)] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -57,76 +140,21 @@ export default function AdminLoginPage() {
 
         {/* Login Form */}
         <div className="bg-[var(--surface-card)] rounded-[var(--radius-lg)] shadow-lg border border-[var(--border-subtle)] p-6">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Email */}
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-[var(--text-primary)] mb-1.5"
-              >
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                required
-                autoComplete="email"
-                className="w-full px-3 py-2.5 bg-[var(--input-bg)] border border-[var(--border-default)] rounded-[var(--radius-md)] text-[var(--text-primary)] placeholder:text-[var(--text-placeholder)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition-all"
-              />
+          <Suspense fallback={
+            <div className="space-y-4">
+              <div className="h-[72px] bg-[var(--surface-card-alt)] rounded-[var(--radius-md)] animate-pulse" />
+              <div className="h-[72px] bg-[var(--surface-card-alt)] rounded-[var(--radius-md)] animate-pulse" />
+              <div className="h-[44px] bg-[var(--surface-card-alt)] rounded-[var(--radius-md)] animate-pulse" />
             </div>
-
-            {/* Password */}
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-[var(--text-primary)] mb-1.5"
-              >
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                autoComplete="current-password"
-                className="w-full px-3 py-2.5 bg-[var(--input-bg)] border border-[var(--border-default)] rounded-[var(--radius-md)] text-[var(--text-primary)] placeholder:text-[var(--text-placeholder)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition-all"
-              />
-            </div>
-
-            {/* Error Message */}
-            {error && (
-              <div className="text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-[var(--radius-md)] px-3 py-2">
-                {error}
-              </div>
-            )}
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-2.5 px-4 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] disabled:bg-[var(--accent-primary)]/50 text-white font-medium rounded-[var(--radius-md)] transition-colors disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {isLoading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Logging in...
-                </>
-              ) : (
-                'Login'
-              )}
-            </button>
-          </form>
+          }>
+            <LoginForm />
+          </Suspense>
         </div>
 
         {/* Back Link */}
         <p className="text-center text-sm text-[var(--text-secondary)] mt-6">
           <a href="/" className="hover:text-[var(--accent-primary)] transition-colors">
-            &larr; Back to projects
+            ← Back to home
           </a>
         </p>
       </div>

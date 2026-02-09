@@ -343,6 +343,70 @@ export async function getAllActivity(limit = 100): Promise<AdminActivity[]> {
 }
 
 /**
+ * Admin with project count for public team display
+ */
+export interface TeamMember {
+  id: string;
+  name: string;
+  email: string;
+  projectCount: number;
+}
+
+/**
+ * Get active team members (admins) with their project counts
+ * Used for the public team page / homepage
+ */
+export async function getTeamMembers(): Promise<TeamMember[]> {
+  const supabase = getSupabase();
+
+  // Get active admins
+  const { data: admins, error: adminError } = await supabase
+    .from('admins')
+    .select('id, name, email')
+    .eq('is_active', true)
+    .order('name', { ascending: true });
+
+  if (adminError) {
+    console.error('Failed to fetch team members:', adminError);
+    return [];
+  }
+
+  if (!admins || admins.length === 0) {
+    return [];
+  }
+
+  // Get project counts for each admin
+  const { data: projects, error: projectError } = await supabase
+    .from('projects')
+    .select('owner_id');
+
+  if (projectError) {
+    console.error('Failed to fetch project counts:', projectError);
+    // Return admins without project counts
+    return admins.map((admin) => ({
+      id: admin.id,
+      name: admin.name,
+      email: admin.email,
+      projectCount: 0,
+    }));
+  }
+
+  // Count projects per admin
+  const projectCounts = new Map<string, number>();
+  for (const project of projects || []) {
+    const count = projectCounts.get(project.owner_id) || 0;
+    projectCounts.set(project.owner_id, count + 1);
+  }
+
+  return admins.map((admin) => ({
+    id: admin.id,
+    name: admin.name,
+    email: admin.email,
+    projectCount: projectCounts.get(admin.id) || 0,
+  }));
+}
+
+/**
  * Check if any super admin exists (for initial setup)
  */
 export async function hasSuperAdmin(): Promise<boolean> {
