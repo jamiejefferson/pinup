@@ -124,8 +124,15 @@ export async function extractPrototype(
     for (const entry of entries) {
       const entryPath = sanitizePath(entry.entryName);
 
-      // Skip empty paths, directories, or disallowed files
-      if (!entryPath || entry.isDirectory || !isAllowedFile(entryPath)) {
+      // Skip empty paths, directories, macOS metadata, or disallowed files
+      if (
+        !entryPath ||
+        entry.isDirectory ||
+        entryPath.startsWith('__MACOSX/') ||
+        entryPath.split('/').some(part => part.startsWith('._')) ||
+        path.basename(entryPath) === '.DS_Store' ||
+        !isAllowedFile(entryPath)
+      ) {
         continue;
       }
 
