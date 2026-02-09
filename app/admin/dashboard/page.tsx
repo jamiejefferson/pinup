@@ -115,15 +115,17 @@ export default async function AdminDashboardPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {projects.map((project) => (
-              <Link
+              <div
                 key={project.id}
-                href={`/admin/projects/${project.id}`}
                 className="bg-[var(--surface-card)] rounded-[var(--radius-lg)] border border-[var(--border-subtle)] p-5 hover:border-[var(--accent-primary)] transition-colors group"
               >
                 <div className="flex items-start justify-between mb-3">
-                  <h3 className="font-semibold text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors">
+                  <Link
+                    href={`/admin/projects/${project.id}`}
+                    className="font-semibold text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors"
+                  >
                     {project.name}
-                  </h3>
+                  </Link>
                   <span className="px-2 py-0.5 bg-[var(--surface-card-alt)] text-[var(--text-secondary)] text-xs rounded">
                     {project.versions.length} version{project.versions.length !== 1 ? 's' : ''}
                   </span>
@@ -131,18 +133,38 @@ export default async function AdminDashboardPage() {
                 <p className="text-sm text-[var(--text-secondary)] mb-3 font-mono">
                   /{project.id}
                 </p>
-                <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                    />
-                  </svg>
-                  Client Password: {project.clientPassword.slice(0, 3)}***
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                      />
+                    </svg>
+                    {project.clientPassword.slice(0, 3)}***
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={`/${project.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-2 py-1 text-xs text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 rounded transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      View
+                    </a>
+                    <Link
+                      href={`/admin/projects/${project.id}`}
+                      className="px-2 py-1 text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-card-alt)] rounded transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Manage
+                    </Link>
+                  </div>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         )}

@@ -122,13 +122,38 @@ export async function getSession(): Promise<AuthSession | null> {
 /**
  * Get session for a specific project
  * Returns null if no session or session is for a different project
+ * Also checks for admin sessions - admins can view projects they own (or all for super admins)
  */
 export async function getProjectSession(projectId: string): Promise<AuthSession | null> {
+  // First check for regular client session
   const session = await getSession();
-  if (!session || session.projectId !== projectId) {
-    return null;
+  if (session && session.projectId === projectId) {
+    return session;
   }
-  return session;
+
+  // Check for admin session - admins can view projects without client login
+  const adminSession = await getAdminSession();
+  if (adminSession) {
+    // Import dynamically to avoid circular dependency
+    const { getProjectById } = await import('@/lib/projects-db');
+    const project = await getProjectById(projectId);
+    
+    if (project) {
+      // Super admins can view any project
+      // Regular admins can view their own projects
+      if (adminSession.isSuperAdmin || project.ownerId === adminSession.adminId) {
+        // Create a synthetic session for the admin
+        return {
+          projectId,
+          userName: adminSession.name,
+          userType: 'admin',
+          expiresAt: adminSession.expiresAt,
+        };
+      }
+    }
+  }
+
+  return null;
 }
 
 /**

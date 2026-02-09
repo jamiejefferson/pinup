@@ -82,12 +82,25 @@ function handleAdminRoute(request: NextRequest): NextResponse | null {
 
 /**
  * Handle project route protection
+ * Allows access if user has:
+ * 1. Valid client session for this project, OR
+ * 2. Valid admin session (admin can view any of their projects, super admin can view all)
  */
 function handleProjectRoute(
   request: NextRequest,
   projectId: string
 ): NextResponse | null {
-  // Check for auth cookie
+  // First, check for admin session - admins can view projects without client login
+  const adminCookie = request.cookies.get(ADMIN_AUTH_COOKIE_NAME);
+  if (adminCookie?.value) {
+    const adminSession = decodeAdminSession(adminCookie.value);
+    if (adminSession && !isSessionExpired(adminSession)) {
+      // Admin is logged in - allow access (ownership check happens in page)
+      return null;
+    }
+  }
+
+  // Check for client auth cookie
   const sessionCookie = request.cookies.get(AUTH_COOKIE_NAME);
 
   if (!sessionCookie?.value) {

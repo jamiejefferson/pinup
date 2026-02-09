@@ -51,7 +51,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
           </div>
           <div className="flex items-center gap-3">
             <a
-              href={`/${project.id}/login`}
+              href={`/${project.id}`}
               target="_blank"
               rel="noopener noreferrer"
               className="px-3 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-card-alt)] rounded-[var(--radius-md)] transition-colors flex items-center gap-2"
