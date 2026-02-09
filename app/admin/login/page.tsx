@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { Logo } from '@/components/logo';
 import { AdminLoginResponse } from '@/types';
 
@@ -151,11 +152,22 @@ export default function AdminLoginPage() {
           </Suspense>
         </div>
 
-        {/* Back Link */}
+        {/* Sign Up Link */}
         <p className="text-center text-sm text-[var(--text-secondary)] mt-6">
-          <a href="/" className="hover:text-[var(--accent-primary)] transition-colors">
+          Don&apos;t have an account?{' '}
+          <Link
+            href="/admin/signup"
+            className="text-[var(--accent-primary)] hover:underline"
+          >
+            Sign up
+          </Link>
+        </p>
+
+        {/* Back Link */}
+        <p className="text-center text-sm text-[var(--text-secondary)] mt-2">
+          <Link href="/" className="hover:text-[var(--accent-primary)] transition-colors">
             ← Back to home
-          </a>
+          </Link>
         </p>
       </div>
     </div>

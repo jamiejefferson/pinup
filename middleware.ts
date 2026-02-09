@@ -44,8 +44,8 @@ function isSessionExpired(session: { expiresAt: string }): boolean {
 function handleAdminRoute(request: NextRequest): NextResponse | null {
   const { pathname } = request.nextUrl;
 
-  // Allow access to admin login page
-  if (pathname === '/admin/login') {
+  // Allow access to admin login and signup pages
+  if (pathname === '/admin/login' || pathname === '/admin/signup') {
     return null;
   }
 

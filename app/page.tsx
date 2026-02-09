@@ -139,13 +139,13 @@ export default async function HomePage() {
             )}
           </div>
 
-          {/* Direct Login Link */}
+          {/* Sign Up Link */}
           <div className="mt-6 text-center">
             <Link
-              href="/admin/login"
+              href="/admin/signup"
               className="text-sm text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors"
             >
-              Sign in with email →
+              New here? Create an account →
             </Link>
           </div>
         </div>

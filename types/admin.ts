@@ -55,6 +55,7 @@ export interface AdminActivity {
 export type AdminAction =
   | 'login'
   | 'logout'
+  | 'signup'
   | 'create_project'
   | 'update_project'
   | 'delete_project'
