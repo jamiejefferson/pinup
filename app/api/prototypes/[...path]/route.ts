@@ -65,9 +65,9 @@ export async function GET(
       .download(storagePath);
 
     if (error) {
-      console.error('Failed to fetch from storage:', error);
+      console.error(`Failed to fetch from storage [${storagePath}]:`, error);
       return NextResponse.json(
-        { error: 'File not found' },
+        { error: 'File not found', path: storagePath, detail: error.message },
         { status: 404 }
       );
     }
