@@ -19,6 +19,7 @@ const ACTION_LABELS: Record<string, string> = {
   update_admin: 'Updated admin',
   delete_admin: 'Deleted admin',
   reset_password: 'Reset password',
+  password_reset_request: 'Requested password reset',
 };
 
 const ACTION_COLORS: Record<string, string> = {
@@ -33,6 +34,7 @@ const ACTION_COLORS: Record<string, string> = {
   update_admin: 'bg-yellow-500/20 text-yellow-400',
   delete_admin: 'bg-red-500/20 text-red-400',
   reset_password: 'bg-orange-500/20 text-orange-400',
+  password_reset_request: 'bg-orange-500/20 text-orange-400',
 };
 
 function ActivityDetails({ details }: { details: Record<string, unknown> }) {

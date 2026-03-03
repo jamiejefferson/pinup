@@ -13,6 +13,10 @@ function LoginForm() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotSuccess, setForgotSuccess] = useState(false);
 
   // Pre-fill email from URL if provided
   useEffect(() => {
@@ -95,6 +99,65 @@ function LoginForm() {
           className="w-full px-3 py-2.5 bg-[var(--input-bg)] border border-[var(--border-default)] rounded-[var(--radius-md)] text-[var(--text-primary)] placeholder:text-[var(--text-placeholder)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition-all"
         />
       </div>
+
+      {/* Forgot Password */}
+      <div className="flex justify-end -mt-1">
+        <button
+          type="button"
+          onClick={() => {
+            setShowForgotPassword(!showForgotPassword);
+            setForgotSuccess(false);
+          }}
+          className="text-sm text-[var(--accent-primary)] hover:underline"
+        >
+          Forgot password?
+        </button>
+      </div>
+
+      {showForgotPassword && !forgotSuccess && (
+        <div className="bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/20 rounded-[var(--radius-md)] px-3 py-3 space-y-2">
+          <p className="text-sm text-[var(--text-secondary)]">
+            Enter your email to request a password reset from your team admin.
+          </p>
+          <div className="flex gap-2">
+            <input
+              type="email"
+              value={forgotEmail}
+              onChange={(e) => setForgotEmail(e.target.value)}
+              placeholder="you@example.com"
+              className="flex-1 px-3 py-2 bg-[var(--input-bg)] border border-[var(--border-default)] rounded-[var(--radius-md)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-placeholder)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition-all"
+            />
+            <button
+              type="button"
+              disabled={forgotLoading || !forgotEmail}
+              onClick={async () => {
+                setForgotLoading(true);
+                try {
+                  await fetch('/api/admin/auth/forgot-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: forgotEmail }),
+                  });
+                  setForgotSuccess(true);
+                } catch {
+                  setForgotSuccess(true);
+                } finally {
+                  setForgotLoading(false);
+                }
+              }}
+              className="px-3 py-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] disabled:bg-[var(--accent-primary)]/50 text-white text-sm font-medium rounded-[var(--radius-md)] transition-colors disabled:cursor-not-allowed whitespace-nowrap"
+            >
+              {forgotLoading ? 'Sending...' : 'Submit'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {forgotSuccess && (
+        <div className="text-sm text-green-400 bg-green-500/10 border border-green-500/20 rounded-[var(--radius-md)] px-3 py-2">
+          Your request has been flagged. A team admin will reset your password.
+        </div>
+      )}
 
       {/* Error Message */}
       {error && (

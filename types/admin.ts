@@ -64,4 +64,16 @@ export type AdminAction =
   | 'create_admin'
   | 'update_admin'
   | 'delete_admin'
-  | 'reset_password';
+  | 'reset_password'
+  | 'password_reset_request';
+
+/**
+ * A pending password reset request
+ */
+export interface PasswordResetRequest {
+  id: string;
+  adminId: string;
+  adminName: string;
+  adminEmail: string;
+  createdAt: string;
+}

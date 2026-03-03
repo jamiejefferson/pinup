@@ -1,10 +1,11 @@
 import { redirect } from 'next/navigation';
 import { getAdminSession } from '@/lib/auth';
 import { getProjectsByOwner, getAllProjects } from '@/lib/projects-db';
-import { getAllAdmins } from '@/lib/admins';
+import { getAllAdmins, getPendingResetRequests } from '@/lib/admins';
 import { Logo } from '@/components/logo';
 import Link from 'next/link';
-import { Admin } from '@/types/admin';
+import { Admin, PasswordResetRequest } from '@/types/admin';
+import { ResetRequestsBanner } from './reset-requests-banner';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -103,8 +104,11 @@ export default async function AdminDashboardPage() {
     ? await getAllProjects()
     : await getProjectsByOwner(session.adminId);
 
-  // Super admins can see all team members
+  // Super admins can see all team members and pending reset requests
   const teamMembers = session.isSuperAdmin ? await getAllAdmins() : [];
+  const resetRequests = session.isSuperAdmin
+    ? await getPendingResetRequests()
+    : [];
 
   return (
     <div className="min-h-screen bg-[var(--surface-bg)]">
@@ -132,6 +136,16 @@ export default async function AdminDashboardPage() {
 
           <div className="flex items-center gap-3">
             <Link
+              href="/admin/guide"
+              className="px-3 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-card-alt)] rounded-[var(--radius-md)] transition-colors flex items-center gap-1.5"
+              title="Getting Started Guide"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Guide
+            </Link>
+            <Link
               href="/admin/projects/new"
               className="px-4 py-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white text-sm font-medium rounded-[var(--radius-md)] transition-colors"
             >
@@ -151,6 +165,11 @@ export default async function AdminDashboardPage() {
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 py-8 space-y-10">
+        {/* Password Reset Requests (Super Admin Only) */}
+        {session.isSuperAdmin && resetRequests.length > 0 && (
+          <ResetRequestsBanner requests={resetRequests} />
+        )}
+
         {/* Projects Section */}
         <section>
           <div className="mb-6">

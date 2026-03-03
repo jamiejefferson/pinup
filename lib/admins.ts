@@ -7,6 +7,7 @@ import {
   UpdateAdminRequest,
   AdminActivity,
   AdminAction,
+  PasswordResetRequest,
 } from '@/types/admin';
 import bcrypt from 'bcryptjs';
 
@@ -404,6 +405,93 @@ export async function getTeamMembers(): Promise<TeamMember[]> {
     email: admin.email,
     projectCount: projectCounts.get(admin.id) || 0,
   }));
+}
+
+/**
+ * Create a password reset request for an admin
+ */
+export async function createPasswordResetRequest(
+  adminId: string
+): Promise<void> {
+  const supabase = getSupabase();
+
+  const { error } = await supabase.from('password_reset_requests').insert({
+    admin_id: adminId,
+  });
+
+  if (error) {
+    throw new Error(`Failed to create reset request: ${error.message}`);
+  }
+}
+
+/**
+ * Get all pending (unresolved) password reset requests, joined with admin info
+ */
+export async function getPendingResetRequests(): Promise<
+  PasswordResetRequest[]
+> {
+  const supabase = getSupabase();
+
+  const { data, error } = await supabase
+    .from('password_reset_requests')
+    .select('id, admin_id, created_at, admins(name, email)')
+    .is('resolved_at', null)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Failed to fetch reset requests:', error);
+    return [];
+  }
+
+  // Supabase returns the joined relation as an object (single FK) or array
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data || []).map((row: any) => {
+    const admin = Array.isArray(row.admins) ? row.admins[0] : row.admins;
+    return {
+      id: row.id,
+      adminId: row.admin_id,
+      adminName: admin?.name ?? 'Unknown',
+      adminEmail: admin?.email ?? 'Unknown',
+      createdAt: row.created_at,
+    };
+  });
+}
+
+/**
+ * Check if an admin already has a pending reset request
+ */
+export async function hasPendingResetRequest(
+  adminId: string
+): Promise<boolean> {
+  const supabase = getSupabase();
+
+  const { count, error } = await supabase
+    .from('password_reset_requests')
+    .select('*', { count: 'exact', head: true })
+    .eq('admin_id', adminId)
+    .is('resolved_at', null);
+
+  if (error) {
+    throw new Error(`Failed to check reset requests: ${error.message}`);
+  }
+
+  return (count ?? 0) > 0;
+}
+
+/**
+ * Resolve (dismiss) a password reset request
+ */
+export async function resolveResetRequest(requestId: string): Promise<void> {
+  const supabase = getSupabase();
+
+  const { error } = await supabase
+    .from('password_reset_requests')
+    .update({ resolved_at: new Date().toISOString() })
+    .eq('id', requestId);
+
+  if (error) {
+    throw new Error(`Failed to resolve reset request: ${error.message}`);
+  }
 }
 
 /**
