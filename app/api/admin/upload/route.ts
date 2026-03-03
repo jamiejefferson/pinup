@@ -1,35 +1,49 @@
 import { NextResponse } from 'next/server';
-import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
 import { getAdminSession } from '@/lib/auth';
+import { getSupabase } from '@/lib/supabase';
 
-export async function POST(request: Request): Promise<NextResponse> {
-  const body = (await request.json()) as HandleUploadBody;
-
+/**
+ * POST /api/admin/upload - Generate a signed upload URL for direct browser upload
+ * Accepts JSON with:
+ * - filename: Original filename (used for temp path)
+ */
+export async function POST(request: Request) {
   try {
-    const jsonResponse = await handleUpload({
-      body,
-      request,
-      token: process.env.BLOB_READ_WRITE_TOKEN,
-      onBeforeGenerateToken: async () => {
-        const session = await getAdminSession();
-        if (!session) {
-          throw new Error('Unauthorized');
-        }
+    const session = await getAdminSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-        return {
-          maximumSizeInBytes: 50 * 1024 * 1024, // 50MB
-        };
-      },
-      onUploadCompleted: async () => {
-        // No-op: the versions route handles processing
-      },
+    const { filename } = await request.json();
+    if (!filename || typeof filename !== 'string') {
+      return NextResponse.json({ error: 'Filename is required' }, { status: 400 });
+    }
+
+    const tempPath = `temp-uploads/${crypto.randomUUID()}/${filename}`;
+    const supabase = getSupabase();
+
+    const { data, error } = await supabase.storage
+      .from('Prototypes')
+      .createSignedUploadUrl(tempPath, { upsert: true });
+
+    if (error) {
+      console.error('Failed to create signed upload URL:', error);
+      return NextResponse.json(
+        { error: 'Failed to create upload URL' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({
+      signedUrl: data.signedUrl,
+      token: data.token,
+      path: data.path,
     });
-
-    return NextResponse.json(jsonResponse);
   } catch (error) {
+    console.error('Upload URL error:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Upload failed' },
-      { status: 400 }
+      { error: 'Failed to create upload URL' },
+      { status: 500 }
     );
   }
 }

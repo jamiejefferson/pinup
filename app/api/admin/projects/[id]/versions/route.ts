@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { del } from '@vercel/blob';
 import { getAdminSession } from '@/lib/auth';
 import {
   getProjectById,
@@ -9,11 +8,14 @@ import {
 } from '@/lib/projects-db';
 import { extractPrototype } from '@/lib/uploads';
 import { logAdminActivity } from '@/lib/admins';
+import { getSupabase } from '@/lib/supabase';
+
+const STORAGE_BUCKET = 'Prototypes';
 
 /**
  * POST /api/admin/projects/[id]/versions - Create a new version
  * Accepts JSON with:
- * - blobUrl: URL of the uploaded ZIP in Vercel Blob storage
+ * - storagePath: Path of the uploaded ZIP in Supabase temp storage
  * - label: Version label (e.g., "V1 - Initial Concept")
  */
 export async function POST(
@@ -43,11 +45,11 @@ export async function POST(
     }
 
     // Parse JSON body
-    const { blobUrl, label } = await request.json();
+    const { storagePath, label } = await request.json();
 
-    if (!blobUrl || typeof blobUrl !== 'string') {
+    if (!storagePath || typeof storagePath !== 'string') {
       return NextResponse.json(
-        { error: 'Blob URL is required' },
+        { error: 'Storage path is required' },
         { status: 400 }
       );
     }
@@ -59,32 +61,28 @@ export async function POST(
       );
     }
 
-    // Validate blob URL origin
-    try {
-      const url = new URL(blobUrl);
-      if (!url.hostname.endsWith('.public.blob.vercel-storage.com')) {
-        return NextResponse.json(
-          { error: 'Invalid blob URL' },
-          { status: 400 }
-        );
-      }
-    } catch {
+    // Validate the path is in temp-uploads
+    if (!storagePath.startsWith('temp-uploads/')) {
       return NextResponse.json(
-        { error: 'Invalid blob URL' },
+        { error: 'Invalid storage path' },
         { status: 400 }
       );
     }
 
-    // Download ZIP from blob storage
-    const blobResponse = await fetch(blobUrl);
-    if (!blobResponse.ok) {
+    // Download ZIP from Supabase temp storage
+    const supabase = getSupabase();
+    const { data: fileData, error: downloadError } = await supabase.storage
+      .from(STORAGE_BUCKET)
+      .download(storagePath);
+
+    if (downloadError || !fileData) {
       return NextResponse.json(
         { error: 'Failed to download uploaded file' },
         { status: 400 }
       );
     }
 
-    const arrayBuffer = await blobResponse.arrayBuffer();
+    const arrayBuffer = await fileData.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
     // Get the next version ID
@@ -106,12 +104,8 @@ export async function POST(
       );
     }
 
-    // Delete temporary blob
-    try {
-      await del(blobUrl);
-    } catch {
-      // Non-critical: blob will expire on its own
-    }
+    // Delete temporary upload
+    await supabase.storage.from(STORAGE_BUCKET).remove([storagePath]);
 
     // Create the version record
     const version = await createVersion(projectId, {

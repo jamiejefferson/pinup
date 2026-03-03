@@ -3,7 +3,6 @@
 import { useState, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { upload } from '@vercel/blob/client';
 import { Logo } from '@/components/logo';
 
 export default function UploadVersionPage() {
@@ -78,22 +77,39 @@ export default function UploadVersionPage() {
     setUploadProgress(5);
 
     try {
-      // Phase 1: Upload file directly to Vercel Blob (0-60%)
-      const blob = await upload(file.name, file, {
-        access: 'public',
-        handleUploadUrl: '/api/admin/upload',
-        onUploadProgress: ({ percentage }) => {
-          setUploadProgress(Math.round(percentage * 0.6));
-        },
+      // Phase 1: Get signed upload URL from server
+      const urlRes = await fetch('/api/admin/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename: file.name }),
       });
+
+      if (!urlRes.ok) {
+        const urlData = await urlRes.json();
+        throw new Error(urlData.error || 'Failed to get upload URL');
+      }
+
+      const { signedUrl, path } = await urlRes.json();
+      setUploadProgress(10);
+
+      // Phase 2: Upload file directly to Supabase Storage (10-60%)
+      const uploadRes = await fetch(signedUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/zip' },
+        body: file,
+      });
+
+      if (!uploadRes.ok) {
+        throw new Error('Failed to upload file');
+      }
 
       setUploadProgress(60);
 
-      // Phase 2: Send blob URL to server for processing (60-90%)
+      // Phase 3: Tell server to process the uploaded file (60-90%)
       const response = await fetch(`/api/admin/projects/${projectId}/versions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ blobUrl: blob.url, label: label.trim() }),
+        body: JSON.stringify({ storagePath: path, label: label.trim() }),
       });
 
       setUploadProgress(90);
@@ -107,8 +123,8 @@ export default function UploadVersionPage() {
         setError(data.error || 'Failed to upload version');
         setUploadProgress(0);
       }
-    } catch {
-      setError('An error occurred. Please try again.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred. Please try again.');
       setUploadProgress(0);
     } finally {
       setIsUploading(false);
