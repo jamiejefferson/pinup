@@ -17,11 +17,6 @@ export async function POST(request: Request): Promise<NextResponse> {
         }
 
         return {
-          allowedContentTypes: [
-            'application/zip',
-            'application/x-zip-compressed',
-            'application/x-zip',
-          ],
           maximumSizeInBytes: 50 * 1024 * 1024, // 50MB
         };
       },
