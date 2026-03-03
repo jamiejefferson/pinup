@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { del } from '@vercel/blob';
 import { getAdminSession } from '@/lib/auth';
 import {
   getProjectById,
@@ -6,13 +7,13 @@ import {
   createVersion,
   getNextVersionId,
 } from '@/lib/projects-db';
-import { extractPrototype, validateFileSize } from '@/lib/uploads';
+import { extractPrototype } from '@/lib/uploads';
 import { logAdminActivity } from '@/lib/admins';
 
 /**
- * POST /api/admin/projects/[id]/versions - Upload a new version
- * Accepts multipart form data with:
- * - file: ZIP file containing the prototype
+ * POST /api/admin/projects/[id]/versions - Create a new version
+ * Accepts JSON with:
+ * - blobUrl: URL of the uploaded ZIP in Vercel Blob storage
  * - label: Version label (e.g., "V1 - Initial Concept")
  */
 export async function POST(
@@ -41,49 +42,53 @@ export async function POST(
       }
     }
 
-    // Parse form data
-    const formData = await request.formData();
-    const file = formData.get('file') as File | null;
-    const label = formData.get('label') as string | null;
+    // Parse JSON body
+    const { blobUrl, label } = await request.json();
 
-    if (!file) {
+    if (!blobUrl || typeof blobUrl !== 'string') {
       return NextResponse.json(
-        { error: 'ZIP file is required' },
+        { error: 'Blob URL is required' },
         { status: 400 }
       );
     }
 
-    if (!label || label.trim().length === 0) {
+    if (!label || typeof label !== 'string' || label.trim().length === 0) {
       return NextResponse.json(
         { error: 'Version label is required' },
         { status: 400 }
       );
     }
 
-    // Validate file type
-    if (!file.name.endsWith('.zip')) {
+    // Validate blob URL origin
+    try {
+      const url = new URL(blobUrl);
+      if (!url.hostname.endsWith('.public.blob.vercel-storage.com')) {
+        return NextResponse.json(
+          { error: 'Invalid blob URL' },
+          { status: 400 }
+        );
+      }
+    } catch {
       return NextResponse.json(
-        { error: 'File must be a ZIP archive' },
+        { error: 'Invalid blob URL' },
         { status: 400 }
       );
     }
 
-    // Validate file size
-    try {
-      validateFileSize(file.size);
-    } catch (error) {
+    // Download ZIP from blob storage
+    const blobResponse = await fetch(blobUrl);
+    if (!blobResponse.ok) {
       return NextResponse.json(
-        { error: error instanceof Error ? error.message : 'File too large' },
+        { error: 'Failed to download uploaded file' },
         { status: 400 }
       );
     }
+
+    const arrayBuffer = await blobResponse.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
 
     // Get the next version ID
     const versionId = await getNextVersionId(projectId);
-
-    // Read file as buffer
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
 
     // Extract the ZIP
     let result: { url: string; fileCount: number };
@@ -99,6 +104,13 @@ export async function POST(
         },
         { status: 400 }
       );
+    }
+
+    // Delete temporary blob
+    try {
+      await del(blobUrl);
+    } catch {
+      // Non-critical: blob will expire on its own
     }
 
     // Create the version record

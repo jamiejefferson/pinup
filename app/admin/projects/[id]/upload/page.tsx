@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
+import { upload } from '@vercel/blob/client';
 import { Logo } from '@/components/logo';
 
 export default function UploadVersionPage() {
@@ -74,18 +75,25 @@ export default function UploadVersionPage() {
 
     setError('');
     setIsUploading(true);
-    setUploadProgress(10);
+    setUploadProgress(5);
 
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('label', label.trim());
+      // Phase 1: Upload file directly to Vercel Blob (0-60%)
+      const blob = await upload(file.name, file, {
+        access: 'public',
+        handleUploadUrl: '/api/admin/upload',
+        onUploadProgress: ({ percentage }) => {
+          setUploadProgress(Math.round(percentage * 0.6));
+        },
+      });
 
-      setUploadProgress(30);
+      setUploadProgress(60);
 
+      // Phase 2: Send blob URL to server for processing (60-90%)
       const response = await fetch(`/api/admin/projects/${projectId}/versions`, {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ blobUrl: blob.url, label: label.trim() }),
       });
 
       setUploadProgress(90);
@@ -249,7 +257,9 @@ export default function UploadVersionPage() {
             {isUploading && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-[var(--text-secondary)]">Uploading...</span>
+                  <span className="text-[var(--text-secondary)]">
+                    {uploadProgress < 60 ? 'Uploading file...' : uploadProgress < 100 ? 'Processing...' : 'Done!'}
+                  </span>
                   <span className="text-[var(--text-primary)]">{uploadProgress}%</span>
                 </div>
                 <div className="h-2 bg-[var(--surface-card-alt)] rounded-full overflow-hidden">
