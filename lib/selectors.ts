@@ -127,12 +127,24 @@ export function generateSelector(element: Element): string {
 export function getIframeScript(): string {
   return `
 (function() {
+  // Guard against double injection (the parent may inject on load and again
+  // on mount if the load event fired before React attached its handler)
+  if (window.__pinupInjected) {
+    window.parent.postMessage({ type: 'PINUP_IFRAME_READY' }, '*');
+    return;
+  }
+  window.__pinupInjected = true;
+
   // Comment mode state - when false, allow normal browsing
   let commentModeEnabled = false;
   // Store comment data and their dot elements
   let comments = [];
   let dotElements = new Map();
   let highlightedId = null;
+
+  // Separator used to express a path through nested same-origin iframes:
+  // "iframe#app >>> main > p:nth-of-type(2)"
+  const FRAME_SEP = ' >>> ';
 
   // Utility class patterns to filter out
   const UTILITY_PATTERNS = [
@@ -156,22 +168,24 @@ export function getIframeScript(): string {
       .slice(0, 2);
   }
 
-  function generateSelector(element) {
+  // Selector for an element within its own document (no frame path)
+  function generateLocalSelector(element) {
     const path = [];
     let current = element;
+    const body = element.ownerDocument.body;
     
-    while (current && current !== document.body && current.tagName !== 'HTML') {
+    while (current && current !== body && current.tagName !== 'HTML') {
       let selector = current.tagName.toLowerCase();
       
       if (current.id) {
-        selector = '#' + current.id;
+        selector = '#' + CSS.escape(current.id);
         path.unshift(selector);
         break;
       }
       
       const meaningfulClasses = getMeaningfulClasses(current);
       if (meaningfulClasses.length) {
-        selector += '.' + meaningfulClasses.join('.');
+        selector += '.' + meaningfulClasses.map(c => CSS.escape(c)).join('.');
       }
       
       const parent = current.parentElement;
@@ -192,15 +206,43 @@ export function getIframeScript(): string {
     return path.join(' > ');
   }
 
+  // Full selector including the chain of nested iframes down from this document
+  function generateSelector(element) {
+    const parts = [generateLocalSelector(element)];
+    let doc = element.ownerDocument;
+    while (doc !== document) {
+      const frameEl = doc.defaultView && doc.defaultView.frameElement;
+      if (!frameEl) break;
+      parts.unshift(generateLocalSelector(frameEl));
+      doc = frameEl.ownerDocument;
+    }
+    return parts.join(FRAME_SEP);
+  }
+
+  // Resolve a (possibly frame-pathed) selector to an element, or null
+  function resolveSelector(selector) {
+    const parts = selector.split(FRAME_SEP);
+    let doc = document;
+    for (let i = 0; i < parts.length; i++) {
+      const el = doc.querySelector(parts[i]);
+      if (!el) return null;
+      if (i === parts.length - 1) return el;
+      const inner = getFrameDocument(el);
+      if (!inner) return null;
+      doc = inner;
+    }
+    return null;
+  }
+
   function getElementText(element) {
     const text = element.textContent || '';
     return text.trim().slice(0, 100);
   }
 
-  // Inject styles for comment dots
-  function injectStyles() {
-    if (document.getElementById('pinup-dot-styles')) return;
-    const style = document.createElement('style');
+  // Inject styles for comment dots into a given document
+  function injectStyles(doc) {
+    if (doc.getElementById('pinup-dot-styles')) return;
+    const style = doc.createElement('style');
     style.id = 'pinup-dot-styles';
     style.textContent = \`
       .pinup-comment-dot {
@@ -232,12 +274,12 @@ export function getIframeScript(): string {
         transform: translate(-50%, -50%) scale(1.25);
       }
     \`;
-    document.head.appendChild(style);
+    (doc.head || doc.documentElement).appendChild(style);
   }
 
-  // Create a dot element for a comment
-  function createDot(comment, index) {
-    const dot = document.createElement('button');
+  // Create a dot element for a comment in the given document
+  function createDot(doc, comment, index) {
+    const dot = doc.createElement('button');
     dot.className = 'pinup-comment-dot';
     dot.setAttribute('data-pinup-id', comment.id);
     dot.textContent = String(index + 1);
@@ -255,16 +297,17 @@ export function getIframeScript(): string {
   // Position a dot relative to its target element
   function positionDot(dot, comment) {
     try {
-      const element = document.querySelector(comment.selector);
+      const element = resolveSelector(comment.selector);
       if (!element) {
         dot.style.display = 'none';
         return;
       }
       
-      // Get element's position relative to the document
+      // Get element's position relative to its own document
+      const win = element.ownerDocument.defaultView;
       const rect = element.getBoundingClientRect();
-      const scrollX = window.scrollX || window.pageXOffset;
-      const scrollY = window.scrollY || window.pageYOffset;
+      const scrollX = win.scrollX || win.pageXOffset;
+      const scrollY = win.scrollY || win.pageYOffset;
       
       // Calculate the absolute position in the document
       const absoluteLeft = rect.left + scrollX;
@@ -274,7 +317,7 @@ export function getIframeScript(): string {
       const x = absoluteLeft + (rect.width * comment.clickX / 100);
       const y = absoluteTop + (rect.height * comment.clickY / 100);
       
-      dot.style.display = 'flex';
+      dot.style.display = commentModeEnabled ? 'flex' : 'none';
       dot.style.left = x + 'px';
       dot.style.top = y + 'px';
     } catch (err) {
@@ -295,10 +338,19 @@ export function getIframeScript(): string {
 
     // Create or update dots for each comment
     comments.forEach((comment, index) => {
+      const element = resolveSelector(comment.selector);
+      const targetDoc = element ? element.ownerDocument : document;
       let dot = dotElements.get(comment.id);
+      // Recreate the dot if its document was torn down (nested frame reload)
+      // or if the target element now lives in a different document
+      if (dot && (!dot.isConnected || dot.ownerDocument !== targetDoc)) {
+        dot.remove();
+        dot = null;
+      }
       if (!dot) {
-        dot = createDot(comment, index);
-        document.body.appendChild(dot);
+        injectStyles(targetDoc);
+        dot = createDot(targetDoc, comment, index);
+        targetDoc.body.appendChild(dot);
         dotElements.set(comment.id, dot);
       }
       // Update number in case order changed
@@ -332,7 +384,7 @@ export function getIframeScript(): string {
     // Update comments list
     if (e.data.type === 'PINUP_UPDATE_COMMENTS') {
       comments = e.data.comments || [];
-      injectStyles();
+      injectStyles(document);
       updateDots();
       setDotsVisible(commentModeEnabled);
     }
@@ -353,7 +405,7 @@ export function getIframeScript(): string {
     }
   });
 
-  document.addEventListener('click', function(e) {
+  function handleClick(e) {
     // Ignore clicks on our dots
     if (e.target.classList && e.target.classList.contains('pinup-comment-dot')) {
       return;
@@ -371,8 +423,8 @@ export function getIframeScript(): string {
     const rect = element.getBoundingClientRect();
     
     // Calculate click position within element as percentage
-    const clickX = Math.round(((e.clientX - rect.left) / rect.width) * 100);
-    const clickY = Math.round(((e.clientY - rect.top) / rect.height) * 100);
+    const clickX = rect.width ? Math.round(((e.clientX - rect.left) / rect.width) * 100) : 0;
+    const clickY = rect.height ? Math.round(((e.clientY - rect.top) / rect.height) * 100) : 0;
     
     const data = {
       type: 'PINUP_ELEMENT_CLICK',
@@ -385,7 +437,69 @@ export function getIframeScript(): string {
     };
     
     window.parent.postMessage(data, '*');
-  }, true);
+  }
+
+  // Get a same-origin iframe's document, or null if inaccessible / not ready
+  function getFrameDocument(frameEl) {
+    try {
+      const doc = frameEl.contentDocument;
+      if (!doc || !doc.body) return null;
+      return doc;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  // Attach click capture to a document and to every same-origin iframe
+  // inside it (recursively), now and as frames load or are added later.
+  // Prototypes built as single-file bundles often render their pages inside
+  // a nested <iframe srcdoc>, so clicks never reach the outer document.
+  function attachToDocument(doc) {
+    if (!doc || doc.__pinupAttached) return;
+    doc.__pinupAttached = true;
+
+    doc.addEventListener('click', handleClick, true);
+    if (doc !== document && doc.defaultView) {
+      doc.defaultView.addEventListener('resize', function() {
+        if (commentModeEnabled) updateDots();
+      });
+    }
+
+    Array.from(doc.querySelectorAll('iframe')).forEach(watchFrame);
+
+    try {
+      const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(m) {
+          Array.from(m.addedNodes).forEach(function(node) {
+            if (node.nodeType !== 1) return;
+            if (node.tagName === 'IFRAME') watchFrame(node);
+            else if (node.querySelectorAll) {
+              Array.from(node.querySelectorAll('iframe')).forEach(watchFrame);
+            }
+          });
+        });
+      });
+      observer.observe(doc.documentElement, { childList: true, subtree: true });
+    } catch (err) {
+      // MutationObserver unavailable - static frames still attached above
+    }
+  }
+
+  function watchFrame(frameEl) {
+    if (frameEl.__pinupWatched) return;
+    frameEl.__pinupWatched = true;
+    // Each (re)load of the frame produces a fresh document
+    frameEl.addEventListener('load', function() {
+      attachToDocument(getFrameDocument(frameEl));
+      if (commentModeEnabled) updateDots();
+    });
+    const doc = getFrameDocument(frameEl);
+    if (doc && doc.readyState !== 'loading') {
+      attachToDocument(doc);
+    }
+  }
+
+  attachToDocument(document);
 
   // Send ready message
   window.parent.postMessage({ type: 'PINUP_IFRAME_READY' }, '*');

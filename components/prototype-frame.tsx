@@ -28,7 +28,11 @@ export function PrototypeFrame({
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [iframeReady, setIframeReady] = useState(false);
+  // Incremented every time the injected script reports ready. The prototype
+  // re-runs the script after each in-prototype navigation, so state must be
+  // re-sent on every ready, not just the first.
+  const [readyCount, setReadyCount] = useState(0);
+  const iframeReady = readyCount > 0;
 
   // Inject click handler script into iframe
   const injectScript = useCallback(() => {
@@ -37,7 +41,7 @@ export function PrototypeFrame({
 
     try {
       const doc = iframe.contentDocument;
-      if (!doc) return;
+      if (!doc || !doc.body) return;
 
       // Create and inject the script
       const script = doc.createElement('script');
@@ -55,6 +59,26 @@ export function PrototypeFrame({
     setIsLoading(false);
     setError(null);
     injectScript();
+  }, [injectScript]);
+
+  // The iframe is server-rendered, so a cached prototype can finish loading
+  // before React hydrates and attaches onLoad. Catch that case on mount.
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const iframe = iframeRef.current;
+      if (!iframe) return;
+      try {
+        const doc = iframe.contentDocument;
+        const href = doc?.location?.href || '';
+        if (doc && doc.readyState === 'complete' && doc.body && href !== 'about:blank') {
+          // The script's ready message clears the loading state
+          injectScript();
+        }
+      } catch {
+        // Cross-origin: onLoad will still fire and report the error
+      }
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [injectScript]);
 
   // Handle iframe error
@@ -79,7 +103,7 @@ export function PrototypeFrame({
         });
       } else if (event.data.type === 'PINUP_IFRAME_READY') {
         setIsLoading(false);
-        setIframeReady(true);
+        setReadyCount((n) => n + 1);
       } else if (event.data.type === 'PINUP_DOT_CLICK') {
         // Handle dot click from inside iframe
         onDotClick?.(event.data.commentId);
@@ -90,16 +114,16 @@ export function PrototypeFrame({
     return () => window.removeEventListener('message', handleMessage);
   }, [onElementClick, onDotClick]);
 
-  // Send comment mode state to iframe when it changes
+  // Send comment mode state to iframe when it changes or the script (re)loads
   useEffect(() => {
     const iframe = iframeRef.current;
-    if (!iframe?.contentWindow) return;
+    if (!iframe?.contentWindow || !iframeReady) return;
 
     iframe.contentWindow.postMessage({
       type: 'PINUP_SET_COMMENT_MODE',
       enabled: commentModeEnabled,
     }, '*');
-  }, [commentModeEnabled]);
+  }, [commentModeEnabled, readyCount, iframeReady]);
 
   // Send comments to iframe for dot rendering
   useEffect(() => {
@@ -118,7 +142,7 @@ export function PrototypeFrame({
       type: 'PINUP_UPDATE_COMMENTS',
       comments: commentData,
     }, '*');
-  }, [comments, iframeReady]);
+  }, [comments, readyCount, iframeReady]);
 
   // Send highlight state to iframe
   useEffect(() => {
@@ -129,7 +153,7 @@ export function PrototypeFrame({
       type: 'PINUP_SET_HIGHLIGHT',
       commentId: highlightedCommentId,
     }, '*');
-  }, [highlightedCommentId, iframeReady]);
+  }, [highlightedCommentId, readyCount, iframeReady]);
 
   return (
     <div className="relative flex-1 bg-[#1a1a1a]">
