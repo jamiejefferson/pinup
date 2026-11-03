@@ -45,6 +45,10 @@ Create `.env.local`:
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+
+# Signs login cookies. Generate with: openssl rand -base64 32
+PINUP_SESSION_SECRET=generate-a-random-value
 
 # Legacy admin password (for reviewing as admin)
 PINUP_ADMIN_PASSWORD=your-secure-admin-password
@@ -200,6 +204,8 @@ pinup/
 |----------|-------------|
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key, used by the server for all database access. Never expose it to the browser |
+| `PINUP_SESSION_SECRET` | Signs login cookies, at least 32 characters. Changing it logs everyone out |
 | `PINUP_ADMIN_PASSWORD` | Password for admin access in reviews |
 | `PINUP_SUPER_ADMIN_EMAIL` | Initial super admin email |
 | `PINUP_SUPER_ADMIN_PASSWORD` | Initial super admin password |

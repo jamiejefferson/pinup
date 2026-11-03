@@ -53,9 +53,6 @@ CREATE INDEX IF NOT EXISTS password_reset_requests_pending_idx ON password_reset
 -- RLS
 ALTER TABLE password_reset_requests ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Allow all operations on password_reset_requests" ON password_reset_requests
-  FOR ALL USING (true) WITH CHECK (true);
-
 -- ============================================
 -- PROJECTS TABLE
 -- ============================================
@@ -117,23 +114,8 @@ ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
 ALTER TABLE project_versions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE comments ENABLE ROW LEVEL SECURITY;
 
--- Allow all operations (server-side auth handles authorization)
--- Adjust these policies based on your security requirements
-
-CREATE POLICY "Allow all operations on admins" ON admins
-  FOR ALL USING (true) WITH CHECK (true);
-
-CREATE POLICY "Allow all operations on admin_activity" ON admin_activity
-  FOR ALL USING (true) WITH CHECK (true);
-
-CREATE POLICY "Allow all operations on projects" ON projects
-  FOR ALL USING (true) WITH CHECK (true);
-
-CREATE POLICY "Allow all operations on project_versions" ON project_versions
-  FOR ALL USING (true) WITH CHECK (true);
-
-CREATE POLICY "Allow all operations on comments" ON comments
-  FOR ALL USING (true) WITH CHECK (true);
+-- No policies on purpose. The server uses the service role key, which bypasses
+-- RLS, and the public anon key gets no access to these tables.
 
 -- ============================================
 -- HELPER FUNCTION: Get Next Version ID

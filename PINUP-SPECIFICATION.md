@@ -272,6 +272,10 @@ Prototypes/
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+
+# Signs login cookies. Generate with: openssl rand -base64 32
+PINUP_SESSION_SECRET=generate-a-random-value
 
 # Legacy admin password (for client login as admin)
 PINUP_ADMIN_PASSWORD=your-secure-admin-password
@@ -402,6 +406,8 @@ Proxies files from Supabase Storage to maintain same-origin for iframe script in
 5. Set environment variables in Vercel:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `PINUP_SESSION_SECRET`
    - `PINUP_ADMIN_PASSWORD`
    - `PINUP_SUPER_ADMIN_EMAIL`
    - `PINUP_SUPER_ADMIN_PASSWORD`
