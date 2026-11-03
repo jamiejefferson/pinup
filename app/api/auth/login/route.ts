@@ -45,7 +45,7 @@ export async function POST(request: Request) {
 
     // Create session
     const session = createSession(projectId, name.trim(), userType);
-    const encodedSession = encodeSession(session);
+    const encodedSession = await encodeSession(session);
 
     // Set cookie
     const cookieStore = await cookies();

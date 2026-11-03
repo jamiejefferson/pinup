@@ -45,7 +45,7 @@ export async function POST(request: Request) {
 
     // Create session
     const session = createAdminSession(admin);
-    const encodedSession = encodeAdminSession(session);
+    const encodedSession = await encodeAdminSession(session);
 
     // Set cookie
     const cookieStore = await cookies();

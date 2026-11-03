@@ -83,7 +83,7 @@ export async function POST(request: Request) {
     const cookieStore = await cookies();
     cookieStore.set({
       name: ADMIN_AUTH_COOKIE_NAME,
-      value: encodeAdminSession(session),
+      value: await encodeAdminSession(session),
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',

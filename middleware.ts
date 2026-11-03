@@ -6,30 +6,7 @@ import {
   AuthSession,
   AdminSession,
 } from '@/types';
-
-/**
- * Decode project/client session from cookie string (Edge-compatible)
- */
-function decodeSession(encoded: string): AuthSession | null {
-  try {
-    const decoded = atob(encoded);
-    return JSON.parse(decoded) as AuthSession;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Decode admin session from cookie string (Edge-compatible)
- */
-function decodeAdminSession(encoded: string): AdminSession | null {
-  try {
-    const decoded = atob(encoded);
-    return JSON.parse(decoded) as AdminSession;
-  } catch {
-    return null;
-  }
-}
+import { verifySessionToken } from '@/lib/session-token';
 
 /**
  * Check if session is expired
@@ -41,7 +18,7 @@ function isSessionExpired(session: { expiresAt: string }): boolean {
 /**
  * Handle admin route protection
  */
-function handleAdminRoute(request: NextRequest): NextResponse | null {
+async function handleAdminRoute(request: NextRequest): Promise<NextResponse | null> {
   const { pathname } = request.nextUrl;
 
   // Allow access to admin login and signup pages
@@ -57,7 +34,7 @@ function handleAdminRoute(request: NextRequest): NextResponse | null {
   }
 
   // Decode and validate admin session
-  const session = decodeAdminSession(adminCookie.value);
+  const session = await verifySessionToken<AdminSession>('admin', adminCookie.value);
 
   if (!session) {
     return NextResponse.redirect(new URL('/admin/login', request.url));
@@ -86,14 +63,14 @@ function handleAdminRoute(request: NextRequest): NextResponse | null {
  * 1. Valid client session for this project, OR
  * 2. Valid admin session (admin can view any of their projects, super admin can view all)
  */
-function handleProjectRoute(
+async function handleProjectRoute(
   request: NextRequest,
   projectId: string
-): NextResponse | null {
+): Promise<NextResponse | null> {
   // First, check for admin session - admins can view projects without client login
   const adminCookie = request.cookies.get(ADMIN_AUTH_COOKIE_NAME);
   if (adminCookie?.value) {
-    const adminSession = decodeAdminSession(adminCookie.value);
+    const adminSession = await verifySessionToken<AdminSession>('admin', adminCookie.value);
     if (adminSession && !isSessionExpired(adminSession)) {
       // Admin is logged in - allow access (ownership check happens in page)
       return null;
@@ -108,7 +85,7 @@ function handleProjectRoute(
   }
 
   // Decode and validate session
-  const session = decodeSession(sessionCookie.value);
+  const session = await verifySessionToken<AuthSession>('client', sessionCookie.value);
 
   if (!session) {
     return NextResponse.redirect(new URL(`/${projectId}/login`, request.url));
@@ -135,7 +112,7 @@ function handleProjectRoute(
  * - Admin routes: /admin/*
  * - Project routes: /[project]/*
  */
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Skip middleware for:
@@ -157,7 +134,7 @@ export function middleware(request: NextRequest) {
 
   // Handle admin routes
   if (pathname.startsWith('/admin')) {
-    const adminResponse = handleAdminRoute(request);
+    const adminResponse = await handleAdminRoute(request);
     if (adminResponse) {
       return adminResponse;
     }
@@ -177,7 +154,7 @@ export function middleware(request: NextRequest) {
   }
 
   // Handle project routes
-  const projectResponse = handleProjectRoute(request, projectId);
+  const projectResponse = await handleProjectRoute(request, projectId);
   if (projectResponse) {
     return projectResponse;
   }

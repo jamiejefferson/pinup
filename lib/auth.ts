@@ -14,6 +14,7 @@ import {
   updateAdminLastLogin,
   logAdminActivity,
 } from '@/lib/admins';
+import { signSessionToken, verifySessionToken } from '@/lib/session-token';
 
 /**
  * Get the admin password from environment
@@ -75,22 +76,17 @@ export function createSession(
 }
 
 /**
- * Encode session to string for cookie storage
+ * Sign session for cookie storage
  */
-export function encodeSession(session: AuthSession): string {
-  return Buffer.from(JSON.stringify(session)).toString('base64');
+export async function encodeSession(session: AuthSession): Promise<string> {
+  return signSessionToken('client', session);
 }
 
 /**
- * Decode session from cookie string
+ * Verify and read a session cookie. Returns null if the signature is invalid.
  */
-export function decodeSession(encoded: string): AuthSession | null {
-  try {
-    const decoded = Buffer.from(encoded, 'base64').toString('utf-8');
-    return JSON.parse(decoded) as AuthSession;
-  } catch {
-    return null;
-  }
+export async function decodeSession(encoded: string): Promise<AuthSession | null> {
+  return verifySessionToken<AuthSession>('client', encoded);
 }
 
 /**
@@ -111,7 +107,7 @@ export async function getSession(): Promise<AuthSession | null> {
     return null;
   }
 
-  const session = decodeSession(sessionCookie.value);
+  const session = await decodeSession(sessionCookie.value);
   if (!session || isSessionExpired(session)) {
     return null;
   }
@@ -231,22 +227,17 @@ export function createAdminSession(admin: {
 }
 
 /**
- * Encode admin session to string for cookie storage
+ * Sign admin session for cookie storage
  */
-export function encodeAdminSession(session: AdminSession): string {
-  return Buffer.from(JSON.stringify(session)).toString('base64');
+export async function encodeAdminSession(session: AdminSession): Promise<string> {
+  return signSessionToken('admin', session);
 }
 
 /**
- * Decode admin session from cookie string
+ * Verify and read an admin session cookie. Returns null if the signature is invalid.
  */
-export function decodeAdminSession(encoded: string): AdminSession | null {
-  try {
-    const decoded = Buffer.from(encoded, 'base64').toString('utf-8');
-    return JSON.parse(decoded) as AdminSession;
-  } catch {
-    return null;
-  }
+export async function decodeAdminSession(encoded: string): Promise<AdminSession | null> {
+  return verifySessionToken<AdminSession>('admin', encoded);
 }
 
 /**
@@ -267,7 +258,7 @@ export async function getAdminSession(): Promise<AdminSession | null> {
     return null;
   }
 
-  const session = decodeAdminSession(sessionCookie.value);
+  const session = await decodeAdminSession(sessionCookie.value);
   if (!session || isAdminSessionExpired(session)) {
     return null;
   }
